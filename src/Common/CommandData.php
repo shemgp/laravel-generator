@@ -54,8 +54,10 @@ class CommandData
         $this->commandType = $commandType;
 
         $this->fieldNamesMapping = [
-            '$FIELD_NAME_TITLE$' => 'fieldTitle',
-            '$FIELD_NAME$'       => 'name',
+            '$FIELD_NAME_TITLE$'        => 'fieldTitle',
+            '$FIELD_NAME$'              => 'name',
+            '$FIELD_DOT_NOTATION_NAME$' => 'dotNotationName',
+            '$FIELD_IS_FILLABLE$'       => 'isFillable',
         ];
 
         $this->config = new GeneratorConfig();
@@ -180,13 +182,13 @@ class CommandData
         $createdAt = new GeneratorField();
         $createdAt->name = 'created_at';
         $createdAt->parseDBType('timestamp');
-        $createdAt->parseOptions('s,f,if,in');
+        $createdAt->parseOptions('s,f,if,ii');
         $this->fields[] = $createdAt;
 
         $updatedAt = new GeneratorField();
         $updatedAt->name = 'updated_at';
         $updatedAt->parseDBType('timestamp');
-        $updatedAt->parseOptions('s,f,if,in');
+        $updatedAt->parseOptions('s,f,if,ii');
         $this->fields[] = $updatedAt;
     }
 

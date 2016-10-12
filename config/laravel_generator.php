@@ -19,9 +19,9 @@ return [
 
         'repository'        => app_path('Repositories/'),
 
-        'routes'            => app_path('Http/routes.php'),
+        'routes'            => base_path('routes/web.php'),
 
-        'api_routes'        => app_path('Http/api_routes.php'),
+        'api_routes'        => base_path('routes/api.php'),
 
         'request'           => app_path('Http/Requests/'),
 
