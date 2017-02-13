@@ -489,7 +489,7 @@ class TableFieldsGenerator
         foreach ($foreignKeys as $foreignKey) {
             $foreignTable = $foreignKey->foreignTable;
             $foreignField = $foreignKey->foreignField;
-            
+
             if (!isset($tables[$foreignTable])) {
                 continue;
             }
