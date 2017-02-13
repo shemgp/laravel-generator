@@ -491,7 +491,7 @@ class TableFieldsGenerator
             $foreignField = $foreignKey->foreignField;
             
             if (!isset($tables[$foreignTable])) {
-              continue;
+                continue;
             }
 
             if ($foreignField == $tables[$foreignTable]->primaryKey) {
