@@ -32,8 +32,10 @@ trait DatagridSortableAndFilterableUtil
             if ($value == '') {
                 continue;
             }
-            $searches[] = $field.':'.$value;
+            $f[$field] = trim($value);
+            $searches[] = $field.':'.trim($value);
         }
+        $request->merge(['f' => $f]);
         $request['search'] = implode(';', $searches);
         $request['searchUseAnd'] = 1;
     }
