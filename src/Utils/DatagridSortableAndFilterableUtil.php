@@ -25,11 +25,9 @@ trait DatagridSortableAndFilterableUtil
             $request['sortedBy'] = $f['order_dir'] !== 'DESC' ? 'asc' : 'desc';
         }
 
-        unset($f['order_by']);
-        unset($f['order_dir']);
         $searches = [];
         foreach ($f as $field => $value) {
-            if ($value == '') {
+            if ($value == '' || in_array($field, ['order_by', 'order_dir'])) {
                 continue;
             }
             $f[$field] = trim($value);
