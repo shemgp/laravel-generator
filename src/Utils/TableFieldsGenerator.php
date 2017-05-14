@@ -29,7 +29,7 @@ class GeneratorTable
 class TableFieldsGenerator
 {
     /**
-     * Fields that should not be required.
+     * Fields that should not be required by default.
      *
      * @var array
      */
@@ -76,6 +76,8 @@ class TableFieldsGenerator
         $this->primaryKey = static::getPrimaryKeyOfTable($tableName);
         $this->timestamps = static::getTimestampFieldNames();
         $this->defaultSearchable = config('infyom.laravel_generator.options.tables_searchable_default', false);
+
+        $this->excluded_fields = config('infyom.laravel_generator.options.excluded_fields', $this->excluded_fields);
     }
 
     /**
