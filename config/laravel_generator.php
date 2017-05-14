@@ -111,6 +111,13 @@ return [
         'softDelete' => true,
 
         'tables_searchable_default' => false,
+
+        'excluded_fields' => [
+            'created_at',
+            'updated_at',
+            'deleted_at',
+            'id'
+        ],
     ],
 
     /*
