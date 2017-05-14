@@ -28,6 +28,17 @@ class GeneratorTable
 
 class TableFieldsGenerator
 {
+    /**
+     * Fields that should not be required by default.
+     *
+     * @var array
+     */
+    protected $excluded_fields = [
+        'created_at',
+        'updated_at',
+        'deleted_at'
+    ];
+
     /** @var string */
     public $tableName;
     public $primaryKey;
@@ -64,6 +75,8 @@ class TableFieldsGenerator
         $this->primaryKey = static::getPrimaryKeyOfTable($tableName);
         $this->timestamps = static::getTimestampFieldNames();
         $this->defaultSearchable = config('infyom.laravel_generator.options.tables_searchable_default', false);
+
+        $this->excluded_fields = config('infyom.laravel_generator.options.excluded_fields', $this->excluded_fields);
     }
 
     /**
@@ -110,7 +123,7 @@ class TableFieldsGenerator
                     $field = $this->generateField($column, 'string', 'text');
                     break;
                 case 'text':
-                    $field = $this->generateField($column, 'text', 'textarea');
+                    $field = $this->generateField($column, 'text', 'text');
                     break;
                 default:
                     $field = $this->generateField($column, 'string', 'text');
@@ -126,6 +139,16 @@ class TableFieldsGenerator
                 $field->isFillable = false;
                 $field->inForm = false;
                 $field->inIndex = false;
+            }
+
+            if ($column->getNotNull()
+                    && !in_array($field->name, $this->excluded_fields)
+                    && !$field->isPrimary)
+            {
+                if ($field->validations)
+                    $field->validations .= '|required';
+                else
+                    $field->validations = 'required';
             }
 
             $this->fields[] = $field;

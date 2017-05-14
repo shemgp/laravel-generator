@@ -37,6 +37,8 @@ class ModelGenerator extends BaseGenerator
         $this->path = $commandData->config->pathModel;
         $this->fileName = $this->commandData->modelName.'.php';
         $this->table = $this->commandData->dynamicVars['$TABLE_NAME$'];
+
+        $this->excluded_fields = config('infyom.laravel_generator.options.excluded_fields', $this->excluded_fields);
     }
 
     public function generate()
@@ -158,7 +160,7 @@ class ModelGenerator extends BaseGenerator
         $requiredFields = [];
 
         foreach ($this->commandData->fields as $field) {
-            if (!empty($field->validations)) {
+            if (!empty($field->validations) && !in_array($field->name, $this->excluded_fields)) {
                 if (str_contains($field->validations, 'required')) {
                     $requiredFields[] = $field->name;
                 }

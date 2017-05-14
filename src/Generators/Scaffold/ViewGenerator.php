@@ -23,11 +23,16 @@ class ViewGenerator extends BaseGenerator
     /** @var array */
     private $htmlFields;
 
+    /** @var array */
+    private $hidden_fields;
+
     public function __construct(CommandData $commandData)
     {
         $this->commandData = $commandData;
         $this->path = $commandData->config->pathViews;
         $this->templateType = config('infyom.laravel_generator.templates', 'core-templates');
+
+        $this->hidden_fields = config('infyom.laravel_generator.options.hidden_fields', []);
     }
 
     public function generate()
@@ -80,6 +85,8 @@ class ViewGenerator extends BaseGenerator
         if ($this->commandData->getAddOn('datatables')) {
             $templateData = $this->generateDataTableBody();
             $this->generateDataTableActions();
+        } elseif ($this->commandData->getOption('datagrid')) {
+            $templateData = $this->generateDatagridBladeTableBody();
         } else {
             $templateData = $this->generateBladeTableBody();
         }
@@ -107,6 +114,41 @@ class ViewGenerator extends BaseGenerator
         $this->commandData->commandInfo('datatables_actions.blade.php created');
     }
 
+    private function generateDatagridBladeTableBody()
+    {
+        $templateData = get_template('scaffold.views.datagrid_blade_table_body', $this->templateType);
+
+        $templateData = fill_template($this->commandData->dynamicVars, $templateData);
+
+        $templateData = str_replace('$SET_COLUMNS$', $this->generateDatagridSetColumnFields(), $templateData);
+
+        return $templateData;
+    }
+
+    private function generateDatagridSetColumnFields()
+    {
+        $setColumnsTemplate = get_template('scaffold.views.datagrid_table_set_columns', $this->templateType);
+
+        $setColumns = [];
+
+        foreach ($this->commandData->fields as $field) {
+            if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
+                continue;
+            }
+
+            $field->isFillable = $field->isFillable ? 'true' : 'false';
+
+            $setColumns[] = $fieldTemplate = fill_template_with_field_data(
+                $this->commandData->dynamicVars,
+                $this->commandData->fieldNamesMapping,
+                $setColumnsTemplate,
+                $field
+            );
+        }
+
+        return implode(infy_nl_tab(0, 1), $setColumns);
+    }
+
     private function generateBladeTableBody()
     {
         $templateData = get_template('scaffold.views.blade_table_body', $this->templateType);
@@ -120,7 +162,7 @@ class ViewGenerator extends BaseGenerator
         $tableBodyFields = [];
 
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inIndex) {
+            if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
                 continue;
             }
 
@@ -144,7 +186,7 @@ class ViewGenerator extends BaseGenerator
         $headerFields = [];
 
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inIndex) {
+            if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
                 continue;
             }
             $headerFields[] = $fieldTemplate = fill_template_with_field_data(
@@ -189,8 +231,12 @@ class ViewGenerator extends BaseGenerator
     {
         $this->htmlFields = [];
 
+        $field_folder = 'fields';
+        if ($this->commandData->getOption('bootform'))
+            $field_folder = 'bootform_fields';
+
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inForm) {
+            if (!$field->inForm || in_array($filed->name, $this->hidden_fields)) {
                 continue;
             }
 
@@ -299,7 +345,7 @@ class ViewGenerator extends BaseGenerator
 //                    break;
 //            }
 
-            $fieldTemplate = HTMLFieldGenerator::generateHTML($field, $this->templateType);
+            $fieldTemplate = HTMLFieldGenerator::generateHTML($field, $this->templateType, $field_folder);
 
             if (!empty($fieldTemplate)) {
                 $fieldTemplate = fill_template_with_field_data(
@@ -323,7 +369,11 @@ class ViewGenerator extends BaseGenerator
 
     private function generateCreate()
     {
-        $templateData = get_template('scaffold.views.create', $this->templateType);
+        $prefix = '';
+        if ($this->commandData->getOption('bootform'))
+            $prefix = 'bootform_';
+
+        $templateData = get_template('scaffold.views.'.$prefix.'create', $this->templateType);
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
@@ -333,7 +383,11 @@ class ViewGenerator extends BaseGenerator
 
     private function generateUpdate()
     {
-        $templateData = get_template('scaffold.views.edit', $this->templateType);
+        $prefix = '';
+        if ($this->commandData->getOption('bootform'))
+            $prefix = 'bootform_';
+
+        $templateData = get_template('scaffold.views.'.$prefix.'edit', $this->templateType);
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
