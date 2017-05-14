@@ -158,7 +158,7 @@ class ModelGenerator extends BaseGenerator
         $requiredFields = [];
 
         foreach ($this->commandData->fields as $field) {
-            if (!empty($field->validations)) {
+            if (!empty($field->validations) && !in_array($field->name, $this->excluded_fields)) {
                 if (str_contains($field->validations, 'required')) {
                     $requiredFields[] = $field->name;
                 }

@@ -111,7 +111,7 @@ class ViewGenerator extends BaseGenerator
 
     private function generateDatagridBladeTableBody()
     {
-        $templateData = get_template('scaffold.views.blade_datagrid_table_body', $this->templateType);
+        $templateData = get_template('scaffold.views.datagrid_blade_table_body', $this->templateType);
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
@@ -226,6 +226,10 @@ class ViewGenerator extends BaseGenerator
     {
         $this->htmlFields = [];
 
+        $field_folder = 'fields';
+        if ($this->commandData->getOption('bootform'))
+            $field_folder = 'bootform_fields';
+
         foreach ($this->commandData->fields as $field) {
             if (!$field->inForm) {
                 continue;
@@ -336,7 +340,7 @@ class ViewGenerator extends BaseGenerator
 //                    break;
 //            }
 
-            $fieldTemplate = HTMLFieldGenerator::generateHTML($field, $this->templateType);
+            $fieldTemplate = HTMLFieldGenerator::generateHTML($field, $this->templateType, $field_folder);
 
             if (!empty($fieldTemplate)) {
                 $fieldTemplate = fill_template_with_field_data(
@@ -360,7 +364,11 @@ class ViewGenerator extends BaseGenerator
 
     private function generateCreate()
     {
-        $templateData = get_template('scaffold.views.create', $this->templateType);
+        $prefix = '';
+        if ($this->commandData->getOption('bootform'))
+            $prefix = 'bootform_';
+
+        $templateData = get_template('scaffold.views.'.$prefix.'create', $this->templateType);
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
@@ -370,7 +378,11 @@ class ViewGenerator extends BaseGenerator
 
     private function generateUpdate()
     {
-        $templateData = get_template('scaffold.views.edit', $this->templateType);
+        $prefix = '';
+        if ($this->commandData->getOption('bootform'))
+            $prefix = 'bootform_';
+
+        $templateData = get_template('scaffold.views.'.$prefix.'edit', $this->templateType);
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 

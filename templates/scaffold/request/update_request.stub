@@ -2,10 +2,10 @@
 
 namespace $NAMESPACE_REQUEST$;
 
-use Illuminate\Foundation\Http\FormRequest;
+use $NAMESPACE_REQUEST_BASE$\Request;
 use $NAMESPACE_MODEL$\$MODEL_NAME$;
 
-class Update$MODEL_NAME$Request extends FormRequest
+class Update$MODEL_NAME$Request extends Request
 {
 
     /**

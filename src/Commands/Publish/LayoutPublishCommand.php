@@ -59,22 +59,25 @@ class LayoutPublishCommand extends PublishBaseCommand
     private function getViews()
     {
         return [
-            'layouts/app'     => 'layouts/app.blade.php',
-            'layouts/sidebar' => 'layouts/sidebar.blade.php',
-            'layouts/menu'    => 'layouts/menu.blade.php',
-            'layouts/home'    => 'home.blade.php',
-            'auth/login'      => 'auth/login.blade.php',
-            'auth/register'   => 'auth/register.blade.php',
-            'auth/email'      => 'auth/passwords/email.blade.php',
-            'auth/reset'      => 'auth/passwords/reset.blade.php',
+            'layouts/app'               => 'layouts/app.blade.php',
+            'layouts/sidebar'           => 'layouts/sidebar.blade.php',
+            'layouts/datatables_css'    => 'layouts/datatables_css.blade.php',
+            'layouts/datatables_js'     => 'layouts/datatables_js.blade.php',
+            'layouts/menu'              => 'layouts/menu.blade.php',
+            'layouts/home'              => 'home.blade.php',
+            'auth/login'                => 'auth/login.blade.php',
+            'auth/register'             => 'auth/register.blade.php',
+            'auth/email'                => 'auth/password.blade.php',
+            'auth/reset'                => 'auth/reset.blade.php',
+            'emails/password'           => 'emails/password.blade.php',
         ];
     }
 
     private function updateRoutes()
     {
-        $path = config('infyom.laravel_generator.path.routes', app_path('routes/web.php'));
+        $path = config('infyom.laravel_generator.path.routes', app_path('Http/routes.php'));
 
-        $prompt = 'Existing routes web.php file detected. Should we add standard auth routes? (y|N) :';
+        $prompt = 'Existing routes.php file detected. Should we add standard routes? (y|N) :';
         if (file_exists($path) && !$this->confirmOverwrite($path, $prompt)) {
             return;
         }

@@ -2,6 +2,7 @@
 
 namespace $NAMESPACE_CONTROLLER$;
 
+use $NAMESPACE_REQUEST$;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller

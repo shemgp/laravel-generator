@@ -6,7 +6,7 @@ use InfyOm\Generator\Common\GeneratorField;
 
 class HTMLFieldGenerator
 {
-    public static function generateHTML(GeneratorField $field, $templateType)
+    public static function generateHTML(GeneratorField $field, $templateType, $field_folder = 'fields')
     {
         $fieldTemplate = '';
 
@@ -17,14 +17,14 @@ class HTMLFieldGenerator
             case 'file':
             case 'email':
             case 'password':
-                $fieldTemplate = get_template('scaffold.fields.'.$field->htmlType, $templateType);
+                $fieldTemplate = get_template('scaffold.'.$field_folder.'.'.$field->htmlType, $templateType);
                 break;
             case 'number':
-                $fieldTemplate = get_template('scaffold.fields.'.$field->htmlType, $templateType);
+                $fieldTemplate = get_template('scaffold.'.$field_folder.'.'.$field->htmlType, $templateType);
                 break;
             case 'select':
             case 'enum':
-                $fieldTemplate = get_template('scaffold.fields.select', $templateType);
+                $fieldTemplate = get_template('scaffold.'.$field_folder.'.select', $templateType);
                 $radioLabels = GeneratorFieldsInputUtil::prepareKeyValueArrFromLabelValueStr($field->htmlValues);
 
                 $fieldTemplate = str_replace(
@@ -34,7 +34,7 @@ class HTMLFieldGenerator
                 );
                 break;
             case 'checkbox':
-                $fieldTemplate = get_template('scaffold.fields.checkbox', $templateType);
+                $fieldTemplate = get_template('scaffold.'.$field_folder.'.checkbox', $templateType);
                 if (count($field->htmlValues) > 0) {
                     $checkboxValue = $field->htmlValues[0];
                 } else {
@@ -43,8 +43,8 @@ class HTMLFieldGenerator
                 $fieldTemplate = str_replace('$CHECKBOX_VALUE$', $checkboxValue, $fieldTemplate);
                 break;
             case 'radio':
-                $fieldTemplate = get_template('scaffold.fields.radio_group', $templateType);
-                $radioTemplate = get_template('scaffold.fields.radio', $templateType);
+                $fieldTemplate = get_template('scaffold.'.$field_folder.'.radio_group', $templateType);
+                $radioTemplate = get_template('scaffold.'.$field_folder.'.radio', $templateType);
 
                 $radioLabels = GeneratorFieldsInputUtil::prepareKeyValueArrFromLabelValueStr($field->htmlValues);
 
