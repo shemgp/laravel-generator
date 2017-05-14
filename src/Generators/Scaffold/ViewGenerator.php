@@ -23,11 +23,16 @@ class ViewGenerator extends BaseGenerator
     /** @var array */
     private $htmlFields;
 
+    /** @var array */
+    private $hidden_fields;
+
     public function __construct(CommandData $commandData)
     {
         $this->commandData = $commandData;
         $this->path = $commandData->config->pathViews;
         $this->templateType = config('infyom.laravel_generator.templates', 'core-templates');
+
+        $this->hidden_fields = config('infyom.laravel_generator.options.hidden_fields', []);
     }
 
     public function generate()
@@ -127,7 +132,7 @@ class ViewGenerator extends BaseGenerator
         $setColumns = [];
 
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inIndex) {
+            if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
                 continue;
             }
 
@@ -157,7 +162,7 @@ class ViewGenerator extends BaseGenerator
         $tableBodyFields = [];
 
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inIndex) {
+            if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
                 continue;
             }
 
@@ -181,7 +186,7 @@ class ViewGenerator extends BaseGenerator
         $headerFields = [];
 
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inIndex) {
+            if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
                 continue;
             }
             $headerFields[] = $fieldTemplate = fill_template_with_field_data(
@@ -231,7 +236,7 @@ class ViewGenerator extends BaseGenerator
             $field_folder = 'bootform_fields';
 
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inForm) {
+            if (!$field->inForm || in_array($filed->name, $this->hidden_fields)) {
                 continue;
             }
 
