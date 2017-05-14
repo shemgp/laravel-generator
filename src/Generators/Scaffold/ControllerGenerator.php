@@ -54,7 +54,7 @@ class ControllerGenerator extends BaseGenerator
                 $templateData = str_replace('$USE_DATAGRID_TRAIT$', $use_datagrid_trait, $templateData);
                 $templateData = str_replace('$CALL_DATAGRID$', $call_datagrid, $templateData);
             } else {
-                $templateData = str_replace('$USE_DATAGRID_PATH$', $use_datagrid, $templateData);
+                $templateData = str_replace('$USE_DATAGRID_PATH$', '', $templateData);
                 $templateData = str_replace('$USE_DATAGRID_TRAIT$', '', $templateData);
                 $templateData = str_replace('$CALL_DATAGRID$', '', $templateData);
             }

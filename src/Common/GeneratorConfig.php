@@ -73,6 +73,7 @@ class GeneratorConfig
         'skip',
         'datatables',
         'datagrid',
+        'bootform',
         'views',
         'relations',
     ];
