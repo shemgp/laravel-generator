@@ -122,7 +122,7 @@ class TableFieldsGenerator
                     $field = $this->generateField($column, 'string', 'text');
                     break;
                 case 'text':
-                    $field = $this->generateField($column, 'text', 'textarea');
+                    $field = $this->generateField($column, 'text', 'text');
                     break;
                 default:
                     $field = $this->generateField($column, 'string', 'text');
