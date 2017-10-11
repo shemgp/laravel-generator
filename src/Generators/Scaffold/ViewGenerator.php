@@ -236,7 +236,7 @@ class ViewGenerator extends BaseGenerator
             $field_folder = 'bootform_fields';
 
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inForm || in_array($filed->name, $this->hidden_fields)) {
+            if (!$field->inForm || in_array($field->name, $this->hidden_fields)) {
                 continue;
             }
 
