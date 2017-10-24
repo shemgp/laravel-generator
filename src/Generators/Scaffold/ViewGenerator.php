@@ -378,6 +378,9 @@ class ViewGenerator extends BaseGenerator
 
         $templateData = get_template('scaffold.views.'.$prefix.'create', $this->templateType);
 
+        if (config('infyom.laravel_generator.default_layout'))
+            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
+
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
         FileUtil::createFile($this->path, 'create.blade.php', $templateData);
@@ -391,6 +394,9 @@ class ViewGenerator extends BaseGenerator
             $prefix = 'bootform_';
 
         $templateData = get_template('scaffold.views.'.$prefix.'edit', $this->templateType);
+
+        if (config('infyom.laravel_generator.default_layout'))
+            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
@@ -420,6 +426,9 @@ class ViewGenerator extends BaseGenerator
     private function generateShow()
     {
         $templateData = get_template('scaffold.views.show', $this->templateType);
+
+        if (config('infyom.laravel_generator.default_layout'))
+            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
