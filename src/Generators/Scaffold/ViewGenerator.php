@@ -204,6 +204,9 @@ class ViewGenerator extends BaseGenerator
     {
         $templateData = get_template('scaffold.views.index', $this->templateType);
 
+        if (config('infyom.laravel_generator.default_layout'))
+            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
+
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
         if ($this->commandData->getOption('datatables')) {

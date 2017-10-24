@@ -79,6 +79,8 @@ return [
 
     'templates'         => 'adminlte-templates',
 
+    'default_layout'    => 'layouts.app',
+
     /*
     |--------------------------------------------------------------------------
     | Model extend class
