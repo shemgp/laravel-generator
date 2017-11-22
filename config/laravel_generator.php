@@ -88,7 +88,7 @@ return [
     |
     */
 
-    'model_extend_class' => 'Eloquent',
+    'model_extend_class' => env('ENABLE_USER_TRACKING_MODEL') == 'true' ? 'InfyOm\Generator\Model\UserTrackingBaseModel' : 'Eloquent',
 
     /*
     |--------------------------------------------------------------------------
@@ -113,6 +113,10 @@ return [
         'softDelete' => true,
 
         'tables_searchable_default' => false,
+
+        'hidden_fields' => env('ENABLE_USER_TRACKING_MODEL') == 'true' ? [
+            'user_id'
+        ] : [],
 
         'excluded_fields' => [
             'created_at',
