@@ -17,7 +17,14 @@ class PublishBaseCommand extends BaseCommand
             return;
         }
 
-        copy($sourceFile, $destinationFile);
+        if (config('infyom.laravel_generator.default_layout'))
+        {
+            $tmp_contents = file_get_contents($sourceFile);
+            $tmp_contents = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $tmp_contents);
+            file_put_contents($destinationFile, $tmp_contents);
+        }
+        else
+            copy($sourceFile, $destinationFile);
 
         $this->comment($fileName.' published');
         $this->info($destinationFile);
