@@ -31,6 +31,7 @@ class GeneratorPublishCommand extends PublishBaseCommand
         $this->initAPIRoutes();
         $this->publishTestCases();
         $this->publishBaseController();
+        $this->publishRequestClass();
     }
 
     /**
@@ -121,6 +122,23 @@ class GeneratorPublishCommand extends PublishBaseCommand
         FileUtil::createFile($controllerPath, $fileName, $templateData);
 
         $this->info('AppBaseController created');
+    }
+
+    private function publishRequestClass()
+    {
+        $templateData = get_template('scaffold/request/Request', 'laravel-generator');
+
+        $requestPath = app_path('Http/Requests/');
+
+        $fileName = 'Request.php';
+
+        if (file_exists($requestPath.$fileName) && !$this->confirmOverwrite($fileName)) {
+            return;
+        }
+
+        FileUtil::createFile($requestPath, $fileName, $templateData);
+
+        $this->info('Request created');
     }
 
     /**
