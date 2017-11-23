@@ -13,6 +13,8 @@ use App\User;
  */
 class UserTrackingBaseModel extends Model
 {
+    protected $dateFormat = 'Y-m-d H:i:s e';
+
     /**
      * custom constructor setting user_id from current user
      */
