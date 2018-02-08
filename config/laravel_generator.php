@@ -1,4 +1,13 @@
 <?php
+/*
+|------------------------------------------------------------------------------
+| Package - fill the following when generating for a packate
+|------------------------------------------------------------------------------
+|
+*/
+$package_path = ''; // eg. 'packages/shemgp/rbac_manager/src/'
+$package_namespace = ''; // eg. 'shemgp\\rbac_manager\\'
+$package_view_name = ''; // eg. 'rbac_manager::'
 
 return [
 
@@ -11,39 +20,39 @@ return [
 
     'path' => [
 
-        'migration'         => base_path('database/migrations/'),
+        'migration'         => base_path($package_path.'database/migrations/'),
 
-        'model'             => app_path('Models/'),
+        'model'             => base_path($package_path.'app/Models/'),
 
-        'datatables'        => app_path('DataTables/'),
+        'datatables'        => base_path($package_path.'app/DataTables/'),
 
-        'repository'        => app_path('Repositories/'),
+        'repository'        => base_path($package_path.'app/Repositories/'),
 
-        'routes'            => base_path('routes/web.php'),
+        'routes'            => base_path($package_path.'routes/web.php'),
 
-        'api_routes'        => base_path('routes/api.php'),
+        'api_routes'        => base_path($package_path.'routes/api.php'),
 
-        'request'           => app_path('Http/Requests/'),
+        'request'           => base_path($package_path.'app/Http/Requests/'),
 
-        'api_request'       => app_path('Http/Requests/API/'),
+        'api_request'       => base_path($package_path.'app/Http/Requests/API/'),
 
-        'controller'        => app_path('Http/Controllers/'),
+        'controller'        => base_path($package_path.'app/Http/Controllers/'),
 
-        'api_controller'    => app_path('Http/Controllers/API/'),
+        'api_controller'    => base_path($package_path.'app/Http/Controllers/API/'),
 
-        'test_trait'        => base_path('tests/traits/'),
+        'test_trait'        => base_path($package_path.'tests/traits/'),
 
-        'repository_test'   => base_path('tests/'),
+        'repository_test'   => base_path($package_path.'tests/'),
 
-        'api_test'          => base_path('tests/'),
+        'api_test'          => base_path($package_path.'tests/'),
 
-        'views'             => base_path('resources/views/'),
+        'views'             => base_path($package_path.'resources/views/'),
 
-        'schema_files'      => base_path('resources/model_schemas/'),
+        'schema_files'      => base_path($package_path.'resources/model_schemas/'),
 
-        'templates_dir'     => base_path('resources/infyom/infyom-generator-templates/'),
+        'templates_dir'     => base_path($package_path.'resources/infyom/infyom-generator-templates/'),
 
-        'modelJs'           => base_path('resources/assets/js/models/'),
+        'modelJs'           => base_path($package_path.'resources/assets/js/models/'),
     ],
 
     /*
@@ -55,19 +64,19 @@ return [
 
     'namespace' => [
 
-        'model'             => 'App\Models',
+        'model'             => $package_namespace.'App\Models',
 
-        'datatables'        => 'App\DataTables',
+        'datatables'        => $package_namespace.'App\DataTables',
 
-        'repository'        => 'App\Repositories',
+        'repository'        => $package_namespace.'App\Repositories',
 
-        'controller'        => 'App\Http\Controllers',
+        'controller'        => $package_namespace.'App\Http\Controllers',
 
-        'api_controller'    => 'App\Http\Controllers\API',
+        'api_controller'    => $package_namespace.'App\Http\Controllers\API',
 
-        'request'           => 'App\Http\Requests',
+        'request'           => $package_namespace.'App\Http\Requests',
 
-        'api_request'       => 'App\Http\Requests\API',
+        'api_request'       => $package_namespace.'App\Http\Requests\API',
     ],
 
     /*
@@ -79,7 +88,7 @@ return [
 
     'templates'         => 'adminlte-templates',
 
-    'default_layout'    => 'layouts.app',
+    'default_layout'    => $package_view_name.'layouts.app',
 
     /*
     |--------------------------------------------------------------------------
@@ -140,6 +149,8 @@ return [
         'path' => '',
 
         'view' => '',  // using backend will create return view('backend.?.index') type the backend views directory
+
+        'package_view_name' => $package_view_name,
 
         'public' => '',
     ],
