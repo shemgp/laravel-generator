@@ -246,8 +246,12 @@ class GeneratorConfig
             $commandData->addDynamicVariable('$PATH_PREFIX$', '');
         }
 
-        if (!empty($this->prefixes['view'])) {
-            $commandData->addDynamicVariable('$VIEW_PREFIX$', str_replace('/', '.', $this->prefixes['view']).'.');
+        if (!empty($this->prefixes['view']) || (isset($this->prefixes['package_view_name']) && !empty($this->prefixes['package_view_name']))) {
+            $added_dot = '';
+            if ($this->prefixes['view'] != '') {
+                $added_dot = '.';
+            }
+            $commandData->addDynamicVariable('$VIEW_PREFIX$', str_replace('/', '.', $this->prefixes['package_view_name'].$this->prefixes['view']).$added_dot);
         } else {
             $commandData->addDynamicVariable('$VIEW_PREFIX$', '');
         }
@@ -343,6 +347,7 @@ class GeneratorConfig
         $this->prefixes['route'] = explode('/', config('infyom.laravel_generator.prefixes.route', ''));
         $this->prefixes['path'] = explode('/', config('infyom.laravel_generator.prefixes.path', ''));
         $this->prefixes['view'] = explode('.', config('infyom.laravel_generator.prefixes.view', ''));
+        $this->prefixes['package_view_name'] = config('infyom.laravel_generator.prefixes.package_view_name', '');
         $this->prefixes['public'] = explode('/', config('infyom.laravel_generator.prefixes.public', ''));
 
         if ($this->getOption('prefix')) {
