@@ -26,6 +26,7 @@ class ModelGenerator extends BaseGenerator
     private $path;
     private $fileName;
     private $table;
+    private $default_date_format;
 
     /**
      * ModelGenerator constructor.
@@ -40,6 +41,8 @@ class ModelGenerator extends BaseGenerator
         $this->table = $this->commandData->dynamicVars['$TABLE_NAME$'];
 
         $this->excluded_fields = config('infyom.laravel_generator.options.excluded_fields', $this->excluded_fields);
+        $this->default_date_format = config('infyom.laravel_generator.model_default_date_format', $this->default_date_format);
+
     }
 
     public function generate()
@@ -71,6 +74,15 @@ class ModelGenerator extends BaseGenerator
         $templateData = $this->fillDocs($templateData);
 
         $templateData = $this->fillTimestamps($templateData);
+
+        if ($this->default_date_format)
+        {
+            $templateData = str_replace('$DEFAULT_DATE_FORMAT$', infy_tab().'protected $dateFormat = \''.$this->default_date_format.'\';', $templateData);
+        }
+        else
+        {
+            $templateData = str_replace('$DEFAULT_DATE_FORMAT$', '', $templateData);
+        }
 
         if ($this->commandData->getOption('primary')) {
             $primary = infy_tab()."protected \$primaryKey = '".$this->commandData->getOption('primary')."';\n";

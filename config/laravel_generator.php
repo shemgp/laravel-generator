@@ -99,6 +99,8 @@ return [
 
     'model_extend_class' => env('ENABLE_USER_TRACKING_MODEL') == 'true' ? 'InfyOm\Generator\Model\UserTrackingBaseModel' : 'Eloquent',
 
+    'model_default_date_format' => 'Y-m-d H:i:sO',
+
     /*
     |--------------------------------------------------------------------------
     | API routes prefix & version
