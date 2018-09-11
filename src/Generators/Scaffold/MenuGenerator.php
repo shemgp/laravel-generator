@@ -48,7 +48,7 @@ class MenuGenerator extends BaseGenerator
 
     public function generate()
     {
-        if (strpos($this->menuContents, $this->menuTemplate.infy_nl()) === false) {
+        if (strpos($this->menuContents, $this->menuTemplate) === false) {
             $this->menuContents .= $this->menuTemplate.infy_nl();
 
             file_put_contents($this->path, $this->menuContents);
