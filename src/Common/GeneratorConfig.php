@@ -74,6 +74,7 @@ class GeneratorConfig
         'datatables',
         'datagrid',
         'bootform',
+        'jsValidation',
         'views',
         'relations',
     ];

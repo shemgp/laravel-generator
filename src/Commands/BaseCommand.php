@@ -236,8 +236,9 @@ class BaseCommand extends Command
             ['paginate', null, InputOption::VALUE_REQUIRED, 'Pagination for index.blade.php'],
             ['skip', null, InputOption::VALUE_REQUIRED, 'Skip Specific Items to Generate (migration,model,controllers,api_controller,scaffold_controller,repository,requests,api_requests,scaffold_requests,routes,api_routes,scaffold_routes,views,tests,menu,dump-autoload)'],
             ['datatables', null, InputOption::VALUE_REQUIRED, 'Override datatables settings'],
-            ['datagrid', null, InputOption::VALUE_NONE, 'Use datagrid for in table.blade.php'],
-            ['bootform', null, InputOption::VALUE_NONE, 'Use bootform when building add/edit forms. Has inline validation of errors.'],
+            ['datagrid', null, InputOption::VALUE_NONE, 'Use datagrid for in table.blade.php. Needs aginev/datagrid to be installed.'],
+            ['bootform', null, InputOption::VALUE_NONE, 'Use bootform when building add/edit forms. Has inline validation of errors.  Needs watson/bootstrap-form to be installed.'],
+            ['jsValidation', null, InputOption::VALUE_NONE, 'Use client side javascript validation too.  Needs proengsoft/laravel-jsvalidation to be installed.'],
             ['views', null, InputOption::VALUE_REQUIRED, 'Specify only the views you want generated: index,create,edit,show'],
             ['relations', null, InputOption::VALUE_NONE, 'Specify if you want to pass relationships for fields'],
         ];

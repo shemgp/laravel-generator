@@ -368,6 +368,9 @@ class ViewGenerator extends BaseGenerator
 
         $templateData = str_replace('$FIELDS$', implode("\n\n", $this->htmlFields), $templateData);
 
+        if ($this->commandData->getOption('jsValidation'))
+            $templateData .= "\n{!! Admin::js(asset('vendor/jsvalidation/js/jsvalidation.js')) !!}\n";
+
         FileUtil::createFile($this->path, 'fields.blade.php', $templateData);
         $this->commandData->commandInfo('field.blade.php created');
     }
@@ -385,6 +388,9 @@ class ViewGenerator extends BaseGenerator
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
+        if ($this->commandData->getOption('jsValidation'))
+            $templateData = str_replace('@endsection', "    {!! JsValidator::formRequest('App\Http\Requests\Create".$this->commandData->modelName."Request') !!}\n@endsection", $templateData);
+
         FileUtil::createFile($this->path, 'create.blade.php', $templateData);
         $this->commandData->commandInfo('create.blade.php created');
     }
@@ -401,6 +407,9 @@ class ViewGenerator extends BaseGenerator
             $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
+
+        if ($this->commandData->getOption('jsValidation'))
+            $templateData = str_replace('@endsection', "    {!! JsValidator::formRequest('App\Http\Requests\Update".$this->commandData->modelName."Request') !!}\n@endsection", $templateData);
 
         FileUtil::createFile($this->path, 'edit.blade.php', $templateData);
         $this->commandData->commandInfo('edit.blade.php created');
