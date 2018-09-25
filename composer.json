@@ -27,7 +27,7 @@
         "illuminate/support": "5.0.* || 5.1.* || 5.2.* || 5.3.* || 5.4.* || 5.5.*",
         "prettus/l5-repository": "~2.6",
         "laracasts/flash": "~3.0",
-        "watson/bootstrap-form": "dev-master",
+        "watson/bootstrap-form": "dev-changes",
         "aginev/datagrid": "dev-filters_null_values_etc-for_5.5"
     },
     "require-dev": {
@@ -58,6 +58,10 @@
         "aginev-fork": {
             "type": "vcs",
             "url": "https://github.com/shemgp/datagrid.git"
+        },
+	"watson/bootstrap-form": {
+            "type": "vcs",
+            "url": "https://github.com/shemgp/bootstrap-form.git"
         }
     }
 }
