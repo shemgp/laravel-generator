@@ -30,7 +30,6 @@ class GeneratorField
     public $inForm = true;
     public $isNotNull = false;
     public $inIndex = true;
-    public $isNotNull = false;
 
     public function parseDBType($dbInput)
     {
