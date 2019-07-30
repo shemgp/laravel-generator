@@ -52,7 +52,6 @@ class LayoutPublishCommand extends PublishBaseCommand
     {
         FileUtil::createDirectoryIfNotExist($viewsPath.'layouts');
         FileUtil::createDirectoryIfNotExist($viewsPath.'auth');
-
         FileUtil::createDirectoryIfNotExist($viewsPath.'auth/passwords');
         FileUtil::createDirectoryIfNotExist($viewsPath.'auth/emails');
     }

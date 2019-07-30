@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+abstract class Request extends FormRequest
+{
+    //
+    protected $dontFlash = [];
+
+    public function forUpdate($rules)
+    {
+        $id = basename($this->server->get('REQUEST_URI'));
+
+        $output_rules = [];
+        foreach($rules as $field => $values)
+        {
+            $rule_values = explode("|", $values);
+            $output_rule_values = [];
+            foreach($rule_values as $rule)
+            {
+                $rule = trim($rule);
+                if (strpos($rule, 'unique:') === 0)
+                {
+                    $unique_parts = explode(',', $rule);
+                    if (!isset($unique_parts[1]))
+                        $unique_parts[1] = $field;
+                    if (!isset($unique_parts[2])|| (isset($unique_parts[2])) && $unique_parts[2] == 'NULL')
+                        $unique_parts[2] = $id;
+                    $output_rule_values[] = join(',', $unique_parts);
+                }
+                else if (strpos($rule, 'unique_with:') === 0
+                    && preg_match('/[0-9]/', $rule) === 0)
+                {
+                    $output_rule_values[] = $rule.','.$id;
+                }
+                else
+                {
+                    $output_rule_values[] = $rule;
+                }
+            }
+            $output_rules[$field] = join('|', $output_rule_values);
+        }
+
+        return $output_rules;
+    }
+}

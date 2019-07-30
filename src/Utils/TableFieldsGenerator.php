@@ -28,6 +28,17 @@ class GeneratorTable
 
 class TableFieldsGenerator
 {
+    /**
+     * Fields that should not be required by default.
+     *
+     * @var array
+     */
+    protected $excluded_fields = [
+        'created_at',
+        'updated_at',
+        'deleted_at'
+    ];
+
     /** @var string */
     public $tableName;
     public $primaryKey;
@@ -84,6 +95,8 @@ class TableFieldsGenerator
         $this->primaryKey = static::getPrimaryKeyOfTable($tableName);
         $this->timestamps = static::getTimestampFieldNames();
         $this->defaultSearchable = config('infyom.laravel_generator.options.tables_searchable_default', false);
+
+        $this->excluded_fields = config('infyom.laravel_generator.options.excluded_fields', $this->excluded_fields);
     }
 
     /**
@@ -106,7 +119,7 @@ class TableFieldsGenerator
                     break;
                 case 'boolean':
                     $name = title_case(str_replace('_', ' ', $column->getName()));
-                    $field = $this->generateField($column, 'boolean', 'checkbox,1');
+                    $field = $this->generateField($column, 'bigInteger', 'checkbox,'.$name.',1');
                     break;
                 case 'datetime':
                     $field = $this->generateField($column, 'datetime', 'date');
@@ -130,7 +143,7 @@ class TableFieldsGenerator
                     $field = $this->generateField($column, 'string', 'text');
                     break;
                 case 'text':
-                    $field = $this->generateField($column, 'text', 'textarea');
+                    $field = $this->generateField($column, 'text', 'text');
                     break;
                 default:
                     $field = $this->generateField($column, 'string', 'text');
@@ -147,6 +160,7 @@ class TableFieldsGenerator
                 $field->inForm = false;
                 $field->inIndex = false;
             }
+            $field->isNotNull = (boolean) $column->getNotNull();
 
             $field->isNotNull = (bool) $column->getNotNull();
             $field->description = $column->getComment(); // get comments from table
@@ -250,7 +264,7 @@ class TableFieldsGenerator
         $field = new GeneratorField();
         $field->name = $column->getName();
         $field->parseDBType($dbType);
-        $field->parseHtmlInput($htmlType);
+        $field->htmlType = $htmlType;
 
         return $this->checkForPrimary($field);
     }
@@ -511,10 +525,6 @@ class TableFieldsGenerator
         foreach ($foreignKeys as $foreignKey) {
             $foreignTable = $foreignKey->foreignTable;
             $foreignField = $foreignKey->foreignField;
-
-            if (!isset($tables[$foreignTable])) {
-                continue;
-            }
 
             if ($foreignField == $tables[$foreignTable]->primaryKey) {
                 $modelName = model_name_from_table_name($foreignTable);

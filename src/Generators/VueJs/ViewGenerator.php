@@ -65,6 +65,9 @@ class ViewGenerator extends BaseGenerator
     {
         $templateData = get_template('vuejs.views.index', $this->templateType);
 
+        if (config('infyom.laravel_generator.default_layout'))
+            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
+
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
         if ($this->commandData->getAddOn('datatables')) {
@@ -223,6 +226,9 @@ class ViewGenerator extends BaseGenerator
     private function generateShow()
     {
         $templateData = get_template('vuejs.views.show', $this->templateType);
+
+        if (config('infyom.laravel_generator.default_layout'))
+            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 

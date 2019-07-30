@@ -26,6 +26,7 @@ class ModelGenerator extends BaseGenerator
     private $path;
     private $fileName;
     private $table;
+    private $default_date_format;
 
     /**
      * ModelGenerator constructor.
@@ -38,6 +39,10 @@ class ModelGenerator extends BaseGenerator
         $this->path = $commandData->config->pathModel;
         $this->fileName = $this->commandData->modelName.'.php';
         $this->table = $this->commandData->dynamicVars['$TABLE_NAME$'];
+
+        $this->excluded_fields = config('infyom.laravel_generator.options.excluded_fields', $this->excluded_fields);
+        $this->default_date_format = config('infyom.laravel_generator.model_default_date_format', $this->default_date_format);
+
     }
 
     public function generate()
@@ -69,6 +74,15 @@ class ModelGenerator extends BaseGenerator
         $templateData = $this->fillDocs($templateData);
 
         $templateData = $this->fillTimestamps($templateData);
+
+        if ($this->default_date_format)
+        {
+            $templateData = str_replace('$DEFAULT_DATE_FORMAT$', infy_tab().'protected $dateFormat = \''.$this->default_date_format.'\';', $templateData);
+        }
+        else
+        {
+            $templateData = str_replace('$DEFAULT_DATE_FORMAT$', '', $templateData);
+        }
 
         if ($this->commandData->getOption('primary')) {
             $primary = infy_tab()."protected \$primaryKey = '".$this->commandData->getOption('primary')."';\n";
@@ -154,26 +168,17 @@ class ModelGenerator extends BaseGenerator
         switch ($db_type) {
             case 'datetime':
                 return 'string|\Carbon\Carbon';
+            case 'text':
+                return 'string';
             case '1t1':
-                return '\\'.$this->commandData->config->nsModel.'\\'.$relation->inputs[0].' '.camel_case($relation->inputs[0]);
             case 'mt1':
-                if (isset($relation->inputs[1])) {
-                    $relationName = str_replace('_id', '', strtolower($relation->inputs[1]));
-                } else {
-                    $relationName = $relation->inputs[0];
-                }
-
-                return '\\'.$this->commandData->config->nsModel.'\\'.$relation->inputs[0].' '.camel_case($relationName);
+                return '\\'.$this->commandData->config->nsModel.'\\'.$relation->inputs[0].' '.camel_case($relation->inputs[0]);
             case '1tm':
+                return '\Illuminate\Database\Eloquent\Collection'.' '.$relation->inputs[0];
             case 'mtm':
             case 'hmt':
-                return '\Illuminate\Database\Eloquent\Collection'.' '.camel_case(str_plural($relation->inputs[0]));
+                return '\Illuminate\Database\Eloquent\Collection'.' '.camel_case($relation->inputs[1]);
             default:
-                $fieldData = SwaggerGenerator::getFieldType($db_type);
-                if (!empty($fieldData['fieldType'])) {
-                    return $fieldData['fieldType'];
-                }
-
                 return $db_type;
         }
     }
@@ -205,7 +210,7 @@ class ModelGenerator extends BaseGenerator
         $requiredFields = [];
 
         foreach ($this->commandData->fields as $field) {
-            if (!empty($field->validations)) {
+            if (!empty($field->validations) && !in_array($field->name, $this->excluded_fields)) {
                 if (str_contains($field->validations, 'required')) {
                     $requiredFields[] = $field->name;
                 }
@@ -240,14 +245,13 @@ class ModelGenerator extends BaseGenerator
     private function generateRules()
     {
         $dont_require_fields = config('infyom.laravel_generator.options.hidden_fields', [])
-            + config('infyom.laravel_generator.options.excluded_fields', []);
+                + config('infyom.laravel_generator.options.excluded_fields', []);
 
         $rules = [];
 
         foreach ($this->commandData->fields as $field) {
-            if ($field->isNotNull && empty($field->validations) && !in_array($field->name, $dont_require_fields)) {
+            if ($field->isNotNull && empty($field->validations) && !in_array($field->name, $dont_require_fields))
                 $field->validations = 'required';
-            }
             if (!empty($field->validations)) {
                 $rule = "'".$field->name."' => '".$field->validations."'";
                 $rules[] = $rule;
@@ -270,26 +274,21 @@ class ModelGenerator extends BaseGenerator
 
             $rule = "'".$field->name."' => ";
 
-            switch (strtolower($field->fieldType)) {
+            switch ($field->fieldType) {
                 case 'integer':
-                case 'increments':
-                case 'smallinteger':
-                case 'long':
-                case 'biginteger':
                     $rule .= "'integer'";
                     break;
                 case 'double':
                     $rule .= "'double'";
                     break;
                 case 'float':
-                case 'decimal':
                     $rule .= "'float'";
                     break;
                 case 'boolean':
                     $rule .= "'boolean'";
                     break;
-                case 'datetime':
-                case 'datetimetz':
+                case 'dateTime':
+                case 'dateTimeTz':
                     $rule .= "'datetime'";
                     break;
                 case 'date':
@@ -320,6 +319,7 @@ class ModelGenerator extends BaseGenerator
 
         foreach ($this->commandData->relations as $relation) {
             $relationText = $relation->getRelationFunctionText();
+
             if (!empty($relationText)) {
                 $relations[] = $relationText;
             }
