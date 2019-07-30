@@ -20,39 +20,41 @@ return [
 
     'path' => [
 
-        'migration'         => base_path($package_path.'database/migrations/'),
+        'migration'         => base_path('database/migrations/'),
 
-        'model'             => base_path($package_path.'app/Models/'),
+        'model'             => app_path('Models/'),
 
-        'datatables'        => base_path($package_path.'app/DataTables/'),
+        'datatables'        => app_path('DataTables/'),
 
-        'repository'        => base_path($package_path.'app/Repositories/'),
+        'repository'        => app_path('Repositories/'),
 
-        'routes'            => base_path($package_path.'routes/web.php'),
+        'routes'            => base_path('routes/web.php'),
 
-        'api_routes'        => base_path($package_path.'routes/api.php'),
+        'api_routes'        => base_path('routes/api.php'),
 
-        'request'           => base_path($package_path.'app/Http/Requests/'),
+        'request'           => app_path('Http/Requests/'),
 
-        'api_request'       => base_path($package_path.'app/Http/Requests/API/'),
+        'api_request'       => app_path('Http/Requests/API/'),
 
-        'controller'        => base_path($package_path.'app/Http/Controllers/'),
+        'controller'        => app_path('Http/Controllers/'),
 
-        'api_controller'    => base_path($package_path.'app/Http/Controllers/API/'),
+        'api_controller'    => app_path('Http/Controllers/API/'),
 
-        'test_trait'        => base_path($package_path.'tests/traits/'),
+        'test_trait'        => base_path('tests/Traits/'),
 
-        'repository_test'   => base_path($package_path.'tests/'),
+        'repository_test'   => base_path('tests/Repositories/'),
 
-        'api_test'          => base_path($package_path.'tests/'),
+        'api_test'          => base_path('tests/APIs/'),
 
-        'views'             => base_path($package_path.'resources/views/'),
+        'tests'             => base_path('tests/'),
 
-        'schema_files'      => base_path($package_path.'resources/model_schemas/'),
+        'views'             => base_path('resources/views/'),
 
-        'templates_dir'     => base_path($package_path.'resources/infyom/infyom-generator-templates/'),
+        'schema_files'      => base_path('resources/model_schemas/'),
 
-        'modelJs'           => base_path($package_path.'resources/assets/js/models/'),
+        'templates_dir'     => base_path('resources/infyom/infyom-generator-templates/'),
+
+        'modelJs'           => base_path('resources/assets/js/models/'),
     ],
 
     /*
@@ -64,19 +66,27 @@ return [
 
     'namespace' => [
 
-        'model'             => $package_namespace.'App\Models',
+        'model'             => 'App\Models',
 
-        'datatables'        => $package_namespace.'App\DataTables',
+        'datatables'        => 'App\DataTables',
 
-        'repository'        => $package_namespace.'App\Repositories',
+        'repository'        => 'App\Repositories',
 
-        'controller'        => $package_namespace.'App\Http\Controllers',
+        'controller'        => 'App\Http\Controllers',
 
-        'api_controller'    => $package_namespace.'App\Http\Controllers\API',
+        'api_controller'    => 'App\Http\Controllers\API',
 
-        'request'           => $package_namespace.'App\Http\Requests',
+        'request'           => 'App\Http\Requests',
 
-        'api_request'       => $package_namespace.'App\Http\Requests\API',
+        'api_request'       => 'App\Http\Requests\API',
+
+        'test_trait'        => 'Tests\Traits',
+
+        'repository_test'   => 'Tests\Repositories',
+
+        'api_test'          => 'Tests\APIs',
+
+        'tests'             => 'Tests',
     ],
 
     /*
@@ -88,7 +98,7 @@ return [
 
     'templates'         => 'adminlte-templates',
 
-    'default_layout'    => $package_view_name.'layouts.app',
+    'default_layout'    => 'layouts.app',
 
     /*
     |--------------------------------------------------------------------------
