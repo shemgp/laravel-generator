@@ -145,7 +145,9 @@ class GeneratorConfig
         $this->nsApiRequest = config('infyom.laravel_generator.namespace.api_request', 'App\Http\Requests\API').$prefix;
 
         $this->nsRequest = config('infyom.laravel_generator.namespace.request', 'App\Http\Requests').$prefix;
-        $this->nsRequestBase = config('infyom.laravel_generator.namespace.request', 'App\Http\Requests');
+        if (empty($this->options['moduleName'])) {
+            $this->nsRequestBase = config('infyom.laravel_generator.namespace.request', 'App\Http\Requests');
+        }
         $this->nsBaseController = config('infyom.laravel_generator.namespace.controller', 'App\Http\Controllers');
         $this->nsController = config('infyom.laravel_generator.namespace.controller', 'App\Http\Controllers').$prefix;
 
@@ -402,6 +404,9 @@ class GeneratorConfig
                 $new_config_namespaces[$key] = $this->module_namespace.$namespace;
             }
             config(['infyom.laravel_generator.namespace' => $new_config_namespaces]);
+
+            // use main request namespace for Request class
+            $this->nsRequestBase = 'App\Http\Requests';
 
             // change prefix
             $viewPrefix = $this->prefixes['view'];
