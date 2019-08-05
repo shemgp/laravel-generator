@@ -83,8 +83,8 @@ class GeneratorFieldRelation
         $template = get_template('model.relationship', 'laravel-generator');
 
         $template = str_replace('$RELATIONSHIP_CLASS$', $relationClass, $template);
-        $template = str_replace('$FUNCTION_NAME$', $functionName, $template);
-        $template = str_replace('$RELATION$', $relation, $template);
+        $template = str_replace('$FUNCTION_NAME$', $this->removeSchema($functionName), $template);
+        $template = str_replace('$RELATION$', $this->removeSchema($relation), $template);
         $template = str_replace('$RELATION_MODEL_NAME$', $modelName, $template);
 
         if (count($inputs) > 0) {
@@ -97,5 +97,12 @@ class GeneratorFieldRelation
         $template = str_replace('$INPUT_FIELDS$', $inputFields, $template);
 
         return $template;
+    }
+
+    private function removeSchema($name)
+    {
+        if (strpos($name, ".") !== FALSE)
+            $name = substr($name, strpos($name, ".") + 1);
+        return $name;
     }
 }
