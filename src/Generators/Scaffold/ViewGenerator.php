@@ -369,7 +369,10 @@ class ViewGenerator extends BaseGenerator
         $templateData = str_replace('$FIELDS$', implode("\n\n", $this->htmlFields), $templateData);
 
         if ($this->commandData->getOption('jsValidation'))
-            $templateData .= "\n{!! Admin::js(asset('vendor/jsvalidation/js/jsvalidation.js')) !!}\n";
+        {
+            $add_js_function = config('infyom.laravel_generator.add_js_function', '\Modules\Theme\Libraries\ThemeSetting::add_js_top');
+            $templateData .= "\n{!! $add_js_function(asset('vendor/jsvalidation/js/jsvalidation.js')) !!}\n";
+        }
 
         FileUtil::createFile($this->path, 'fields.blade.php', $templateData);
         $this->commandData->commandInfo('field.blade.php created');
@@ -389,7 +392,10 @@ class ViewGenerator extends BaseGenerator
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
         if ($this->commandData->getOption('jsValidation'))
-            $templateData = str_replace('@endsection', "    {!! JsValidator::formRequest('App\Http\Requests\Create".$this->commandData->modelName."Request') !!}\n@endsection", $templateData);
+        {
+            $request_namespace = $this->commandData->dynamicVars['$NAMESPACE_REQUEST$'];
+            $templateData = str_replace('@endsection', "    {!! JsValidator::formRequest('".$request_namespace."\Create".$this->commandData->modelName."Request') !!}\n@endsection", $templateData);
+        }
 
         FileUtil::createFile($this->path, 'create.blade.php', $templateData);
         $this->commandData->commandInfo('create.blade.php created');
