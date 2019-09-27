@@ -27,47 +27,9 @@ class GeneratorPublishCommand extends PublishBaseCommand
      */
     public function handle()
     {
-        $this->publishAPIRoutes();
-        $this->initAPIRoutes();
         $this->publishTestCases();
         $this->publishBaseController();
-        $this->publishRequestClass();
-    }
-
-    /**
-     * Publishes api_routes.php.
-     */
-    public function publishAPIRoutes()
-    {
-        $routesPath = __DIR__.'/../../../templates/api/routes/api_routes.stub';
-
-        $apiRoutesPath = config('infyom.laravel_generator.path.api_routes', app_path('Http/api_routes.php'));
-
-        $this->publishFile($routesPath, $apiRoutesPath, 'api_routes.php');
-    }
-
-    /**
-     * Initialize routes group based on route integration.
-     */
-    private function initAPIRoutes()
-    {
-        $path = config('infyom.laravel_generator.path.routes', app_path('Http/routes.php'));
-
-        $prompt = 'Existing routes.php file detected. Should we add an API group to the file? (y|N) :';
-        if (file_exists($path) && !$this->confirmOverwrite($path, $prompt)) {
-            return;
-        }
-
-        $routeContents = file_get_contents($path);
-
-        $template = 'api.routes.api_routes_group';
-
-        $templateData = get_template($template, 'laravel-generator');
-
-        $templateData = $this->fillTemplate($templateData);
-
-        file_put_contents($path, $routeContents."\n\n".$templateData);
-        $this->comment("\nAPI group added to routes.php");
+        $this->publishBaseRepository();
     }
 
     /**
@@ -112,12 +74,6 @@ class GeneratorPublishCommand extends PublishBaseCommand
         FileUtil::createFile($testsPath, $fileName, $templateData);
         $this->info('ApiTestTrait created');
 
-        $testTraitPath = config('infyom.laravel_generator.path.test_trait', base_path('tests/Traits/'));
-        if (!file_exists($testTraitPath)) {
-            FileUtil::createDirectoryIfNotExist($testTraitPath);
-            $this->info('Test Traits directory created');
-        }
-
         $testAPIsPath = config('infyom.laravel_generator.path.api_test', base_path('tests/APIs/'));
         if (!file_exists($testAPIsPath)) {
             FileUtil::createDirectoryIfNotExist($testAPIsPath);
@@ -150,21 +106,25 @@ class GeneratorPublishCommand extends PublishBaseCommand
         $this->info('AppBaseController created');
     }
 
-    private function publishRequestClass()
+    private function publishBaseRepository()
     {
-        $templateData = get_template('scaffold/request/Request', 'laravel-generator');
+        $templateData = get_template('base_repository', 'laravel-generator');
 
-        $requestPath = app_path('Http/Requests/');
+        $templateData = $this->fillTemplate($templateData);
 
-        $fileName = 'Request.php';
+        $repositoryPath = app_path('Repositories/');
 
-        if (file_exists($requestPath.$fileName) && !$this->confirmOverwrite($fileName)) {
+        FileUtil::createDirectoryIfNotExist($repositoryPath);
+
+        $fileName = 'BaseRepository.php';
+
+        if (file_exists($repositoryPath.$fileName) && !$this->confirmOverwrite($fileName)) {
             return;
         }
 
-        FileUtil::createFile($requestPath, $fileName, $templateData);
+        FileUtil::createFile($repositoryPath, $fileName, $templateData);
 
-        $this->info('Request created');
+        $this->info('BaseRepository created');
     }
 
     /**

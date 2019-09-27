@@ -6,7 +6,6 @@ use Illuminate\Support\Str;
 use InfyOm\Generator\Common\CommandData;
 use InfyOm\Generator\Generators\BaseGenerator;
 use InfyOm\Generator\Utils\FileUtil;
-use InfyOm\Generator\Utils\GeneratorFieldsInputUtil;
 use InfyOm\Generator\Utils\HTMLFieldGenerator;
 
 class ViewGenerator extends BaseGenerator
@@ -23,16 +22,11 @@ class ViewGenerator extends BaseGenerator
     /** @var array */
     private $htmlFields;
 
-    /** @var array */
-    private $hidden_fields;
-
     public function __construct(CommandData $commandData)
     {
         $this->commandData = $commandData;
         $this->path = $commandData->config->pathViews;
         $this->templateType = config('infyom.laravel_generator.templates', 'adminlte-templates');
-
-        $this->hidden_fields = config('infyom.laravel_generator.options.hidden_fields', []);
     }
 
     public function generate()
@@ -85,8 +79,6 @@ class ViewGenerator extends BaseGenerator
         if ($this->commandData->getAddOn('datatables')) {
             $templateData = $this->generateDataTableBody();
             $this->generateDataTableActions();
-        } elseif ($this->commandData->getOption('datagrid')) {
-            $templateData = $this->generateDatagridBladeTableBody();
         } else {
             $templateData = $this->generateBladeTableBody();
         }
@@ -114,41 +106,6 @@ class ViewGenerator extends BaseGenerator
         $this->commandData->commandInfo('datatables_actions.blade.php created');
     }
 
-    private function generateDatagridBladeTableBody()
-    {
-        $templateData = get_template('scaffold.views.datagrid_blade_table_body', $this->templateType);
-
-        $templateData = fill_template($this->commandData->dynamicVars, $templateData);
-
-        $templateData = str_replace('$SET_COLUMNS$', $this->generateDatagridSetColumnFields(), $templateData);
-
-        return $templateData;
-    }
-
-    private function generateDatagridSetColumnFields()
-    {
-        $setColumnsTemplate = get_template('scaffold.views.datagrid_table_set_columns', $this->templateType);
-
-        $setColumns = [];
-
-        foreach ($this->commandData->fields as $field) {
-            if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
-                continue;
-            }
-
-            $field->isFillable = $field->isFillable ? 'true' : 'false';
-
-            $setColumns[] = $fieldTemplate = fill_template_with_field_data(
-                $this->commandData->dynamicVars,
-                $this->commandData->fieldNamesMapping,
-                $setColumnsTemplate,
-                $field
-            );
-        }
-
-        return implode(infy_nl_tab(0, 1), $setColumns);
-    }
-
     private function generateBladeTableBody()
     {
         $templateData = get_template('scaffold.views.blade_table_body', $this->templateType);
@@ -162,7 +119,7 @@ class ViewGenerator extends BaseGenerator
         $tableBodyFields = [];
 
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
+            if (!$field->inIndex) {
                 continue;
             }
 
@@ -186,7 +143,7 @@ class ViewGenerator extends BaseGenerator
         $headerFields = [];
 
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
+            if (!$field->inIndex) {
                 continue;
             }
             $headerFields[] = $fieldTemplate = fill_template_with_field_data(
@@ -204,12 +161,9 @@ class ViewGenerator extends BaseGenerator
     {
         $templateData = get_template('scaffold.views.index', $this->templateType);
 
-        if (config('infyom.laravel_generator.default_layout'))
-            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
-
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
-        if ($this->commandData->getOption('datatables')) {
+        if ($this->commandData->getAddOn('datatables')) {
             $templateData = str_replace('$PAGINATE$', '', $templateData);
         } else {
             $paginate = $this->commandData->getOption('paginate');
@@ -234,125 +188,14 @@ class ViewGenerator extends BaseGenerator
     {
         $this->htmlFields = [];
 
-        $field_folder = 'fields';
-        if ($this->commandData->getOption('bootform'))
-            $field_folder = 'bootform_fields';
-
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inForm || in_array($field->name, $this->hidden_fields)) {
+            if (!$field->inForm) {
                 continue;
             }
 
-            //            switch ($field->htmlType) {
-            //                case 'text':
-            //                case 'textarea':
-            //                case 'date':
-            //                case 'file':
-            //                case 'email':
-            //                case 'password':
-            //                case 'number':
-            //                    $fieldTemplate = get_template('scaffold.fields.' . $field->htmlType, $this->templateType);
-            //                    break;
-            //
-            //                case 'select':
-            //                case 'enum':
-            //                    $fieldTemplate = get_template('scaffold.fields.select', $this->templateType);
-            //                    $inputsArr = explode(',', $field['htmlTypeInputs']);
-            //
-            //                    $fieldTemplate = str_replace(
-            //                        '$INPUT_ARR$',
-            //                        GeneratorFieldsInputUtil::prepareKeyValueArrayStr($inputsArr),
-            //                        $fieldTemplate
-            //                    );
-            //                    break;
-            //
-            //                case 'radio':
-            //                    $fieldTemplate = get_template('scaffold.fields.radio_group', $this->templateType);
-            //                    $radioTemplate = get_template('scaffold.fields.radio', $this->templateType);
-            //                    $inputsArr = explode(',', $field['htmlTypeInputs']);
-            //                    $radioButtons = [];
-            //                    foreach ($inputsArr as $item) {
-            //                        $radioButtonsTemplate = fill_field_template(
-            //                            $this->commandData->fieldNamesMapping,
-            //                            $radioTemplate, $field
-            //                        );
-            //                        $radioButtonsTemplate = str_replace('$VALUE$', $item, $radioButtonsTemplate);
-            //                        $radioButtons[] = $radioButtonsTemplate;
-            //                    }
-            //                    $fieldTemplate = str_replace('$RADIO_BUTTONS$', implode("\n", $radioButtons), $fieldTemplate);
-            //                    break;
-            //
-            ////                case 'checkbox-group':
-            ////                    $fieldTemplate = get_template('scaffold.fields.checkbox_group', $this->templateType);
-            ////                      $radioTemplate = get_template('scaffold.fields.checks', $this->templateType);
-            ////                      $inputsArr = explode(',', $field['htmlTypeInputs']);
-            ////                      $radioButtons = [];
-            ////                      foreach ($inputsArr as $item) {
-            ////                          $radioButtonsTemplate = fill_field_template(
-            ////                              $this->commandData->fieldNamesMapping,
-            ////                              $radioTemplate,
-            ////                              $field
-            ////                          );
-            ////                          $radioButtonsTemplate = str_replace('$VALUE$', $item, $radioButtonsTemplate);
-            ////                          $radioButtons[] = $radioButtonsTemplate;
-            ////                      }
-            ////                    $fieldTemplate = str_replace('$CHECKBOXES$', implode("\n", $radioButtons), $fieldTemplate);
-            ////                    break;
-            //
-            //                case 'bool-checkbox':
-            //                    $fieldTemplate = get_template('scaffold.fields.bool-checkbox', $this->templateType);
-            //                    $checkboxValue = $value = $field['htmlTypeInputs'];
-            //                    if ($field['fieldType'] === 'boolean') {
-            //                        if ($checkboxValue === 'checked') {
-            //                            $checkboxValue = '1, true';
-            //                        } elseif ($checkboxValue === 'unchecked') {
-            //                            $checkboxValue = '0';
-            //                        }
-            //                    }
-            //                    $fieldTemplate = str_replace('$CHECKBOX_VALUE$', $checkboxValue, $fieldTemplate);
-            //                    $fieldTemplate = str_replace('$VALUE$', $value, $fieldTemplate);
-            //                    break;
-            //
-            //                case 'toggle-switch':
-            //                    $fieldTemplate = get_template('scaffold.fields.toggle-switch', $this->templateType);
-            //                    $checkboxValue = $value = $field['htmlTypeInputs'];
-            //                    if ($field['fieldType'] === 'boolean') {
-            //                        $checkboxValue = "[ 'On' => '1' , 'Off' => '0']";
-            //                    }
-            //                    $fieldTemplate = str_replace('$CHECKBOX_VALUE$', $checkboxValue, $fieldTemplate);
-            //                    //$fieldTemplate = str_replace('$VALUE$', $value, $fieldTemplate);
-            //                    break;
-            //
-            //                case 'checkbox':
-            //                    $fieldTemplate = get_template('scaffold.fields.checkbox', $this->templateType);
-            //                    $checkboxValue = $value = $field['htmlTypeInputs'];
-            //                    if ($field['fieldType'] != 'boolean') {
-            //                        $checkboxValue = "'" . $value . "'";
-            //                    }
-            //                    $fieldTemplate = str_replace('$CHECKBOX_VALUE$', $checkboxValue, $fieldTemplate);
-            //                    $fieldTemplate = str_replace('$VALUE$', $value, $fieldTemplate);
-            //                    break;
-            //
-            //                case 'boolean':
-            //                    $fieldTemplate = get_template('scaffold.fields.boolean', $this->templateType);
-            //                    $checkboxValue = $value = $field['htmlTypeInputs'];
-            //                    if ($field['fieldType'] == 'boolean') {
-            //                        $checkboxValue = true;
-            //                    }
-            //                    $fieldTemplate = str_replace('$CHECKBOX_VALUE$', $checkboxValue, $fieldTemplate);
-            //                    // $fieldTemplate = str_replace('$VALUE$', $value, $fieldTemplate);
-            //                    break;
-            //
-            //                default:
-            //                    $fieldTemplate = '';
-            //                    break;
-            //            }
-
-            $fieldTemplate = HTMLFieldGenerator::generateHTML($field, $this->templateType, $field_folder);
+            $fieldTemplate = HTMLFieldGenerator::generateHTML($field, $this->templateType);
 
             if (!empty($fieldTemplate)) {
-                if($field->isNotNull)
-                    $fieldTemplate = str_replace('$FIELD_NAME_TITLE$', '$FIELD_NAME_TITLE$'.($field->isNotNull ? ' <span class="required">*</span>' : ''), $fieldTemplate);
                 $fieldTemplate = fill_template_with_field_data(
                     $this->commandData->dynamicVars,
                     $this->commandData->fieldNamesMapping,
@@ -368,34 +211,15 @@ class ViewGenerator extends BaseGenerator
 
         $templateData = str_replace('$FIELDS$', implode("\n\n", $this->htmlFields), $templateData);
 
-        if ($this->commandData->getOption('jsValidation'))
-        {
-            $add_js_function = config('infyom.laravel_generator.add_js_function', '\Modules\Theme\Libraries\ThemeSetting::add_js_top');
-            $templateData .= "\n{!! $add_js_function(asset('vendor/jsvalidation/js/jsvalidation.js')) !!}\n";
-        }
-
         FileUtil::createFile($this->path, 'fields.blade.php', $templateData);
         $this->commandData->commandInfo('field.blade.php created');
     }
 
     private function generateCreate()
     {
-        $prefix = '';
-        if ($this->commandData->getOption('bootform'))
-            $prefix = 'bootform_';
-
-        $templateData = get_template('scaffold.views.'.$prefix.'create', $this->templateType);
-
-        if (config('infyom.laravel_generator.default_layout'))
-            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
+        $templateData = get_template('scaffold.views.create', $this->templateType);
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
-
-        if ($this->commandData->getOption('jsValidation'))
-        {
-            $request_namespace = $this->commandData->dynamicVars['$NAMESPACE_REQUEST$'];
-            $templateData = str_replace('@endsection', "    {!! JsValidator::formRequest('".$request_namespace."\Create".$this->commandData->modelName."Request') !!}\n@endsection", $templateData);
-        }
 
         FileUtil::createFile($this->path, 'create.blade.php', $templateData);
         $this->commandData->commandInfo('create.blade.php created');
@@ -403,19 +227,9 @@ class ViewGenerator extends BaseGenerator
 
     private function generateUpdate()
     {
-        $prefix = '';
-        if ($this->commandData->getOption('bootform'))
-            $prefix = 'bootform_';
-
-        $templateData = get_template('scaffold.views.'.$prefix.'edit', $this->templateType);
-
-        if (config('infyom.laravel_generator.default_layout'))
-            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
+        $templateData = get_template('scaffold.views.edit', $this->templateType);
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
-
-        if ($this->commandData->getOption('jsValidation'))
-            $templateData = str_replace('@endsection', "    {!! JsValidator::formRequest('App\Http\Requests\Update".$this->commandData->modelName."Request') !!}\n@endsection", $templateData);
 
         FileUtil::createFile($this->path, 'edit.blade.php', $templateData);
         $this->commandData->commandInfo('edit.blade.php created');
@@ -428,6 +242,9 @@ class ViewGenerator extends BaseGenerator
         $fieldsStr = '';
 
         foreach ($this->commandData->fields as $field) {
+            if (!$field->inView) {
+                continue;
+            }
             $singleFieldStr = str_replace('$FIELD_NAME_TITLE$', Str::title(str_replace('_', ' ', $field->name)),
                 $fieldTemplate);
             $singleFieldStr = str_replace('$FIELD_NAME$', $field->name, $singleFieldStr);
@@ -443,9 +260,6 @@ class ViewGenerator extends BaseGenerator
     private function generateShow()
     {
         $templateData = get_template('scaffold.views.show', $this->templateType);
-
-        if (config('infyom.laravel_generator.default_layout'))
-            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 

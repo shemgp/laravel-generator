@@ -27,18 +27,12 @@ class MenuGenerator extends BaseGenerator
     {
         $this->commandData = $commandData;
         $this->path = config(
-            'infyom.laravel_generator.path.menu_views',
-            base_path('resources/views/'
+            'infyom.laravel_generator.path.views',
+            resource_path('views/'
             )
         ).$commandData->getAddOn('menu.menu_file');
         $this->templateType = config('infyom.laravel_generator.templates', 'adminlte-templates');
 
-        if (!is_dir(dirname($this->path))) {
-            mkdir(dirname($this->path), 755, true);
-        }
-        if (!file_exists($this->path)) {
-            touch($this->path);
-        }
         $this->menuContents = file_get_contents($this->path);
 
         $this->menuTemplate = get_template('scaffold.layouts.menu_template', $this->templateType);
@@ -48,12 +42,9 @@ class MenuGenerator extends BaseGenerator
 
     public function generate()
     {
-        if (strpos($this->menuContents, $this->menuTemplate) === false) {
-            $this->menuContents .= $this->menuTemplate.infy_nl();
+        $this->menuContents .= $this->menuTemplate.infy_nl();
 
-            file_put_contents($this->path, $this->menuContents);
-        }
-
+        file_put_contents($this->path, $this->menuContents);
         $this->commandData->commandComment("\n".$this->commandData->config->mCamelPlural.' menu added.');
     }
 

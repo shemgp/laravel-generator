@@ -2,6 +2,8 @@
 
 namespace InfyOm\Generator\Common;
 
+use Illuminate\Support\Str;
+
 class GeneratorFieldRelation
 {
     /** @var string */
@@ -25,10 +27,10 @@ class GeneratorFieldRelation
         return $relation;
     }
 
-    public function getRelationFunctionText()
+    public function getRelationFunctionText($relationText = null)
     {
-        $singularRelation = (!empty($this->relationName)) ? $this->relationName : camel_case($this->inputs[0]);
-        $pluralRelation = (!empty($this->relationName)) ? $this->relationName : camel_case(str_plural($this->inputs[0]));
+        $singularRelation = (!empty($this->relationName)) ? $this->relationName : Str::camel($relationText);
+        $pluralRelation = (!empty($this->relationName)) ? $this->relationName : Str::camel(Str::plural($relationText));
 
         switch ($this->type) {
             case '1t1':
@@ -45,7 +47,7 @@ class GeneratorFieldRelation
                 if (!empty($this->relationName)) {
                     $singularRelation = $this->relationName;
                 } elseif (isset($this->inputs[1])) {
-                    $singularRelation = camel_case(str_replace('_id', '', strtolower($this->inputs[1])));
+                    $singularRelation = Str::camel(str_replace('_id', '', strtolower($this->inputs[1])));
                 }
                 $functionName = $singularRelation;
                 $relation = 'belongsTo';
@@ -83,8 +85,8 @@ class GeneratorFieldRelation
         $template = get_template('model.relationship', 'laravel-generator');
 
         $template = str_replace('$RELATIONSHIP_CLASS$', $relationClass, $template);
-        $template = str_replace('$FUNCTION_NAME$', $this->removeSchema($functionName), $template);
-        $template = str_replace('$RELATION$', $this->removeSchema($relation), $template);
+        $template = str_replace('$FUNCTION_NAME$', $functionName, $template);
+        $template = str_replace('$RELATION$', $relation, $template);
         $template = str_replace('$RELATION_MODEL_NAME$', $modelName, $template);
 
         if (count($inputs) > 0) {
@@ -97,12 +99,5 @@ class GeneratorFieldRelation
         $template = str_replace('$INPUT_FIELDS$', $inputFields, $template);
 
         return $template;
-    }
-
-    private function removeSchema($name)
-    {
-        if (strpos($name, ".") !== FALSE)
-            $name = substr($name, strpos($name, ".") + 1);
-        return $name;
     }
 }

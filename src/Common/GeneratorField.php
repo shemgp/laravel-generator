@@ -30,10 +30,20 @@ class GeneratorField
     public $inForm = true;
     public $isNotNull = false;
     public $inIndex = true;
+    public $inView = true;
+    public $isNotNull = false;
 
-    public function parseDBType($dbInput)
+    /**
+     * @param Column $column
+     * @param $dbInput
+     */
+    public function parseDBType($dbInput, $column = null)
     {
         $this->dbInput = $dbInput;
+        if (!is_null($column)) {
+            $this->dbInput = ($column->getLength() > 0) ? $this->dbInput.','.$column->getLength() : $this->dbInput;
+            $this->dbInput = (!$column->getNotnull()) ? $this->dbInput.':nullable' : $this->dbInput;
+        }
         $this->prepareMigrationText();
     }
 
@@ -71,6 +81,7 @@ class GeneratorField
             $this->isFillable = false;
             $this->inForm = false;
             $this->inIndex = false;
+            $this->inView = false;
         }
         if (in_array('f', $optionsArr)) {
             $this->isFillable = false;
@@ -80,6 +91,9 @@ class GeneratorField
         }
         if (in_array('ii', $optionsArr)) {
             $this->inIndex = false;
+        }
+        if (in_array('iv', $optionsArr)) {
+            $this->inView = false;
         }
     }
 
@@ -137,6 +151,7 @@ class GeneratorField
         $field->isPrimary = isset($fieldInput['primary']) ? $fieldInput['primary'] : false;
         $field->inForm = isset($fieldInput['inForm']) ? $fieldInput['inForm'] : true;
         $field->inIndex = isset($fieldInput['inIndex']) ? $fieldInput['inIndex'] : true;
+        $field->inView = isset($fieldInput['inView']) ? $fieldInput['inView'] : true;
 
         return $field;
     }

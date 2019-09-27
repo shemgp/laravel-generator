@@ -23,12 +23,9 @@
         }
     ],
     "require": {
-        "php": ">=5.5.9",
-        "illuminate/support": "5.0.* || 5.1.* || 5.2.* || 5.3.* || 5.4.* || 5.5.*",
-        "prettus/l5-repository": "~2.6",
-        "laracasts/flash": "~3.0",
-        "watson/bootstrap-form": "dev-changes",
-        "aginev/datagrid": "dev-filters_null_values_etc-for_5.5"
+        "php": ">=7.2",
+        "illuminate/support": "^6.0.0",
+        "laracasts/flash": "~3.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~5.0",
