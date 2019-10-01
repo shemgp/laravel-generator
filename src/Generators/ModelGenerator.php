@@ -77,6 +77,12 @@ class ModelGenerator extends BaseGenerator
             $primary = '';
         }
 
+        if (config('laravel_generator.model_default_date_format') != "") {
+            $templateData = str_replace('$DEFAULT_DATE_FORMAT$', 'protected $dateFormat = \''.config('laravel_generator.model_default_date_format').'\';', $templateData);
+        } else {
+            $templateData = str_replace('$DEFAULT_DATE_FORMAT$', '', $templateData);
+        }
+
         $templateData = str_replace('$PRIMARY$', $primary, $templateData);
 
         $templateData = str_replace('$FIELDS$', implode(','.infy_nl_tab(1, 2), $fillables), $templateData);
@@ -343,7 +349,6 @@ class ModelGenerator extends BaseGenerator
                 $relationShipText = $relationShipText.'_'.$count;
                 $count++;
             }
-
             $relationText = $relation->getRelationFunctionText($relationShipText);
             if (!empty($relationText)) {
                 $fieldsArr[] = $field;
