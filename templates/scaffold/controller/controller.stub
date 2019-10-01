@@ -9,10 +9,9 @@ use $NAMESPACE_APP$\Http\Controllers\AppBaseController;
 use Illuminate\Http\Request;
 use Flash;
 use Response;
-$USE_DATAGRID_PATH$
+
 class $MODEL_NAME$Controller extends AppBaseController
 {
-    $USE_DATAGRID_TRAIT$
     /** @var  $MODEL_NAME$Repository */
     private $$MODEL_NAME_CAMEL$Repository;
 
@@ -30,8 +29,8 @@ class $MODEL_NAME$Controller extends AppBaseController
      */
     public function index(Request $request)
     {
-        $CALL_DATAGRID$
         $$MODEL_NAME_PLURAL_CAMEL$ = $this->$MODEL_NAME_CAMEL$Repository->$RENDER_TYPE$;
+        $CALL_DATAGRID$
 
         return view('$VIEW_PREFIX$$MODEL_NAME_PLURAL_SNAKE$.index')
             ->with('$MODEL_NAME_PLURAL_CAMEL$', $$MODEL_NAME_PLURAL_CAMEL$);

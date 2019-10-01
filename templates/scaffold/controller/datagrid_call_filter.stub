@@ -1,1 +1,1 @@
-$this->convertDatagridFilterToRepositoryFilter($request);
+$$MODEL_NAME_PLURAL_CAMEL$ = \Datagrid::filterData($$MODEL_NAME_PLURAL_CAMEL$, $request->get('f', []));

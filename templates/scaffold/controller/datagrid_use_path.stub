@@ -1,1 +1,0 @@
-use InfyOm\Generator\Utils\DatagridSortableAndFilterableUtil as DatagridSortableAndFilterable;
