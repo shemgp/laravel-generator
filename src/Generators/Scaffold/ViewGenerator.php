@@ -22,11 +22,16 @@ class ViewGenerator extends BaseGenerator
     /** @var array */
     private $htmlFields;
 
+    /** @var array */
+    private $hidden_fields;
+
     public function __construct(CommandData $commandData)
     {
         $this->commandData = $commandData;
         $this->path = $commandData->config->pathViews;
         $this->templateType = config('infyom.laravel_generator.templates', 'adminlte-templates');
+
+        $this->hidden_fields = config('infyom.laravel_generator.options.hidden_fields', []);
     }
 
     public function generate()
@@ -79,6 +84,8 @@ class ViewGenerator extends BaseGenerator
         if ($this->commandData->getAddOn('datatables')) {
             $templateData = $this->generateDataTableBody();
             $this->generateDataTableActions();
+        } elseif ($this->commandData->getOption('datagrid')) {
+            $templateData = $this->generateDatagridBladeTableBody();
         } else {
             $templateData = $this->generateBladeTableBody();
         }
@@ -119,7 +126,7 @@ class ViewGenerator extends BaseGenerator
         $tableBodyFields = [];
 
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inIndex) {
+            if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
                 continue;
             }
 
@@ -136,6 +143,41 @@ class ViewGenerator extends BaseGenerator
         return str_replace('$FIELD_BODY$', $tableBodyFields, $templateData);
     }
 
+    private function generateDatagridBladeTableBody()
+    {
+        $templateData = get_template('scaffold.views.datagrid_blade_table_body', $this->templateType);
+
+        $templateData = fill_template($this->commandData->dynamicVars, $templateData);
+
+        $templateData = str_replace('$SET_COLUMNS$', $this->generateDatagridSetColumnFields(), $templateData);
+
+        return $templateData;
+    }
+
+    private function generateDatagridSetColumnFields()
+    {
+        $setColumnsTemplate = get_template('scaffold.views.datagrid_table_set_columns', $this->templateType);
+
+        $setColumns = [];
+
+        foreach ($this->commandData->fields as $field) {
+            if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
+                continue;
+            }
+
+            $field->isFillable = $field->isFillable ? 'true' : 'false';
+
+            $setColumns[] = $fieldTemplate = fill_template_with_field_data(
+                $this->commandData->dynamicVars,
+                $this->commandData->fieldNamesMapping,
+                $setColumnsTemplate,
+                $field
+            );
+        }
+
+        return implode(infy_nl_tab(0, 1), $setColumns);
+    }
+
     private function generateTableHeaderFields()
     {
         $headerFieldTemplate = get_template('scaffold.views.table_header', $this->templateType);
@@ -143,7 +185,7 @@ class ViewGenerator extends BaseGenerator
         $headerFields = [];
 
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inIndex) {
+            if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
                 continue;
             }
             $headerFields[] = $fieldTemplate = fill_template_with_field_data(
@@ -162,6 +204,10 @@ class ViewGenerator extends BaseGenerator
         $templateData = get_template('scaffold.views.index', $this->templateType);
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
+
+        if (trim(config('infyom.laravel_generator.default_layout')) != "") {
+            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
+        }
 
         if ($this->commandData->getAddOn('datatables')) {
             $templateData = str_replace('$PAGINATE$', '', $templateData);
@@ -188,12 +234,16 @@ class ViewGenerator extends BaseGenerator
     {
         $this->htmlFields = [];
 
+        $field_folder = 'fields';
+        if ($this->commandData->getOption('bootform'))
+            $field_folder = 'bootform_fields';
+
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inForm) {
+            if (!$field->inForm || in_array($field->name, $this->hidden_fields)) {
                 continue;
             }
 
-            $fieldTemplate = HTMLFieldGenerator::generateHTML($field, $this->templateType);
+            $fieldTemplate = HTMLFieldGenerator::generateHTML($field, $this->templateType, $field_folder);
 
             if (!empty($fieldTemplate)) {
                 $fieldTemplate = fill_template_with_field_data(
@@ -217,7 +267,15 @@ class ViewGenerator extends BaseGenerator
 
     private function generateCreate()
     {
-        $templateData = get_template('scaffold.views.create', $this->templateType);
+        $prefix = '';
+        if ($this->commandData->getOption('bootform'))
+            $prefix = 'bootform_';
+
+        $templateData = get_template('scaffold.views.'.$prefix.'create', $this->templateType);
+
+        if (trim(config('infyom.laravel_generator.default_layout')) != "") {
+            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
+        }
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
@@ -227,7 +285,15 @@ class ViewGenerator extends BaseGenerator
 
     private function generateUpdate()
     {
-        $templateData = get_template('scaffold.views.edit', $this->templateType);
+        $prefix = '';
+        if ($this->commandData->getOption('bootform'))
+            $prefix = 'bootform_';
+
+        $templateData = get_template('scaffold.views.'.$prefix.'edit', $this->templateType);
+
+        if (trim(config('infyom.laravel_generator.default_layout')) != "") {
+            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
+        }
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
@@ -260,6 +326,10 @@ class ViewGenerator extends BaseGenerator
     private function generateShow()
     {
         $templateData = get_template('scaffold.views.show', $this->templateType);
+
+        if (trim(config('infyom.laravel_generator.default_layout')) != "") {
+            $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
+        }
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 

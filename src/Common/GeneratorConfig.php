@@ -89,6 +89,8 @@ class GeneratorConfig
         'seeder',
         'repositoryPattern',
         'moduleName',
+        'bootform',
+        'datagrid',
     ];
 
     public $tableName;
@@ -206,10 +208,12 @@ class GeneratorConfig
         $this->pathRoutes = config('infyom.laravel_generator.path.routes', base_path('routes/web.php'));
         $this->pathFactory = config('infyom.laravel_generator.path.factory', database_path('factories/'));
 
+        // Don't use $viewPrefix here since the service provider adds that,
+        // and so that the path doesn't include it.
         $this->pathViews = config(
             'infyom.laravel_generator.path.views',
             resource_path('views/')
-        ).$viewPrefix.$this->mSnakePlural.'/';
+        ).$this->mSnakePlural.'/';
 
         $this->pathSeeder = config('infyom.laravel_generator.path.seeder', database_path('seeds/'));
         $this->pathDatabaseSeeder = config('infyom.laravel_generator.path.database_seeder', database_path('seeds/DatabaseSeeder.php'));
@@ -362,6 +366,12 @@ class GeneratorConfig
                 $this->addOns['datatables'] = true;
             } else {
                 $this->addOns['datatables'] = false;
+            }
+        }
+        if (!empty($this->options['datagrid'])) {
+            if (isset($this->options['datatables']) && $this->options['datatables'] === 'true' && $this->options['datatables']) {
+                $commandData->commandError('can\'t use datagrid and datables at the same time.');
+                exit;
             }
         }
         if (!empty($this->options['moduleName'])) {

@@ -59,7 +59,7 @@ class TableFieldsGenerator
     public function __construct($tableName, $ignoredFields)
     {
         $this->tableName = $tableName;
-        $this->ignoredFields = $ignoredFields;
+        $this->ignoredFields = array_merge($ignoredFields, config('infyom.laravel_generator.options.excluded_fields'));
 
         $this->schemaManager = DB::getDoctrineSchemaManager();
         $platform = $this->schemaManager->getDatabasePlatform();
@@ -133,7 +133,7 @@ class TableFieldsGenerator
                     $field = $this->generateField($column, 'string', 'text');
                     break;
                 case 'text':
-                    $field = $this->generateField($column, 'text', 'textarea');
+                    $field = $this->generateField($column, 'text', 'text');
                     break;
                 default:
                     $field = $this->generateField($column, 'string', 'text');
@@ -153,6 +153,16 @@ class TableFieldsGenerator
             }
             $field->isNotNull = (bool) $column->getNotNull();
             $field->description = $column->getComment(); // get comments from table
+
+            if ($column->getNotNull()
+                    && !in_array($field->name, $this->ignoredFields)
+                    && !$field->isPrimary)
+            {
+                if ($field->validations)
+                    $field->validations .= '|required';
+                else
+                    $field->validations = 'required';
+            }
 
             $this->fields[] = $field;
         }
