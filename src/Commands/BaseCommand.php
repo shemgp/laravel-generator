@@ -270,6 +270,8 @@ class BaseCommand extends Command
             ['factory', null, InputOption::VALUE_NONE, 'To generate factory'],
             ['seeder', null, InputOption::VALUE_NONE, 'To generate seeder'],
             ['repositoryPattern', null, InputOption::VALUE_REQUIRED, 'Repository Pattern'],
+            ['datagrid', null, InputOption::VALUE_NONE, 'Use datagrid to display list table in CRUD.'],
+            ['moduleName', null, InputOption::VALUE_REQUIRED, 'Generate files to this module & namespace (eg. Admin)'],
         ];
     }
 

@@ -31,7 +31,6 @@ class GeneratorField
     public $isNotNull = false;
     public $inIndex = true;
     public $inView = true;
-    public $isNotNull = false;
 
     /**
      * @param Column $column
