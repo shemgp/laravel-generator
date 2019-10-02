@@ -58,7 +58,7 @@ class ControllerGenerator extends BaseGenerator
             if ($this->commandData->getOption('datagrid')) {
                 $call_datagrid = get_template('scaffold.controller.datagrid_call_filter', 'laravel-generator');
 
-                $templateData = str_replace('$CALL_DATAGRID$', $call_datagrid, $templateData);
+                $templateData = str_replace('$CALL_DATAGRID$', preg_replace("/[\\r\\n]*/", "", $call_datagrid), $templateData);
             } else {
                 $templateData = str_replace('$CALL_DATAGRID$', '', $templateData);
             }
