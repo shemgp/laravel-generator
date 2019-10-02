@@ -301,13 +301,42 @@ class GeneratorConfig
         if (!empty($this->options['moduleName'])) {
             $module_title = Str::title(str_replace("_", " ", Str::snake($this->options['moduleName'])));
             $commandData->addDynamicVariable('$MODULE_NAME$', $module_title);
-            $icon_string = "fas fa-cogs";
-            if (class_exists('InfyOm\Generator\Common\FontAwesomeIconFinder'))
+
+            $this->modules_path = config('modules.paths.modules', base_path('Modules')).'/'.$this->options['moduleName'];
+            $icon_string = "";
+            $composer = [];
+            try
             {
-                $icon_finder = new FontAwesomeIconFinder();
-                $icon_string = $icon_finder->get($module_title);
+            	$composer = json_decode(file_get_contents($this->modules_path.'/composer.json'), true, 512, JSON_THROW_ON_ERROR);
+                if (isset($composer['icon']) && trim($composer['icon']) != "")
+                    $icon_string = $composer['icon'];
+            }
+            catch (Exception $e)
+            {
+                echo $e->getMessage().' on '.$this->modules_path.'/composer.json'."\n";
+            }
+
+            if ($icon_string == "")
+            {
+                if (class_exists('InfyOm\Generator\Common\FontAwesomeIconFinder'))
+                {
+                    $icon_finder = new FontAwesomeIconFinder();
+                    $icon_string = $icon_finder->get($module_title);
+                }
+                else
+                {
+                    $icon_string = "fas fa-cogs";
+                }
             }
             $commandData->addDynamicVariable('$MODULE_ICON$', $icon_string);
+
+            if (isset($composer['description']) && trim($composer['description']) != "")
+                $commandData->addDynamicVariable('$MODULE_DESCRIPTION$', trim($composer['description']));
+            else
+            {
+                echo 'hi';
+                $commandData->addDynamicVariable('$MODULE_DESCRIPTION$', '');
+            }
         }
 
         return $commandData;
