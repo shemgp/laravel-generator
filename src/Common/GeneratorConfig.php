@@ -298,6 +298,18 @@ class GeneratorConfig
             config('infyom.laravel_generator.api_version', 'v1')
         );
 
+        if (!empty($this->options['moduleName'])) {
+            $module_title = Str::title(str_replace("_", " ", Str::snake($this->options['moduleName'])));
+            $commandData->addDynamicVariable('$MODULE_NAME$', $module_title);
+            $icon_string = "fas fa-cogs";
+            if (class_exists('InfyOm\Generator\Common\FontAwesomeIconFinder'))
+            {
+                $icon_finder = new FontAwesomeIconFinder();
+                $icon_string = $icon_finder->get($module_title);
+            }
+            $commandData->addDynamicVariable('$MODULE_ICON$', $icon_string);
+        }
+
         return $commandData;
     }
 
@@ -564,5 +576,94 @@ class GeneratorConfig
         $this->addOns['datatables'] = config('infyom.laravel_generator.add_on.datatables', false);
         $this->addOns['menu.enabled'] = config('infyom.laravel_generator.add_on.menu.enabled', false);
         $this->addOns['menu.menu_file'] = config('infyom.laravel_generator.add_on.menu.menu_file', 'layouts.menu');
+    }
+}
+
+class FontAwesomeIconFinder
+{
+	private function getPage($url, $js)
+	{
+		$bf = new \HeadlessChromium\BrowserFactory('google-chrome');
+		$b = $bf->createBrowser();
+		$p = $b->createPage();
+		$p->navigate($url)->waitForNavigation();
+		try
+		{
+			$return = $p->evaluate ($js)->getReturnValue();
+		}
+		catch (Exception $e)
+		{
+			// one more tries
+			$return = $this->getPage($url, $js);
+		}
+		return $return;
+	}
+
+	private function getFirstGoodKeyword($words)
+	{
+		$keywords = $this->getPage('https://fontawesome.com/icons?d=gallery&q='.$words.'&m=free', 'document.getElementById("results-icons").textContent');
+		if (preg_match("/Sorry, we couldn't find any icons/", $keywords))
+			return "";
+
+		// get first keyword without a -
+		$keyword = "";
+		$first_keyword = '';
+		foreach(explode(" ", $keywords) as $keyword)
+		{
+			if (trim($keyword) == "")
+				continue;
+			if ($first_keyword == "")
+				$first_keyword = $keyword;
+			if (strpos($keyword, '-') !== FALSE)
+				continue;
+			break;
+		}
+		// if no keywords without a - can't be found use first keyword
+		if ($keyword == "" && $first_keyword != "")
+			$keyword = $first_keyword;
+
+		return $keyword;
+	}
+
+    private function findIcon($search)
+    {
+		// find keywors using full string going down to shorter strings
+		$words_sub_search = $search;
+		do
+		{
+            echo "Searching with '".$words_sub_search."'\n";
+			$found = $this->getFirstGoodKeyword($words_sub_search);
+			if ($found == "")
+				$words_sub_search = trim(substr($words_sub_search, 0, strrpos($words_sub_search, " ")));
+		}
+		while($found == "" || strpos($words_sub_search, " ") !== FALSE);
+
+		// if still can't find those keywords
+		if ($found == "")
+		{
+			// search per words
+			foreach(explode($search, " ") as $keyword)
+			{
+                echo "Searching with '".$keyword."'\n";
+				$found = $this->getFirstGoodKeyword($keyword);
+				if ($found != "")
+					break;
+			}
+		}
+
+		return $found;
+    }
+
+    public function get($words)
+    {
+		if (!class_exists('HeadlessChromium\BrowserFactory'))
+			return "";
+
+		$found = $this->findIcon($words);
+		if ($found != "")
+		{
+			// get code
+			return $this->getPage('https://fontawesome.com/icons/'.$found, 'document.getElementsByTagName("code")[3].childNodes[1].textContent');
+		}
     }
 }
