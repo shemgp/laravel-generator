@@ -334,7 +334,6 @@ class GeneratorConfig
                 $commandData->addDynamicVariable('$MODULE_DESCRIPTION$', trim($composer['description']));
             else
             {
-                echo 'hi';
                 $commandData->addDynamicVariable('$MODULE_DESCRIPTION$', '');
             }
         }
