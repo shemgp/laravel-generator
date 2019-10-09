@@ -79,8 +79,8 @@ class ModelGenerator extends BaseGenerator
             $primary = '';
         }
 
-        if (config('laravel_generator.model_default_date_format') != "") {
-            $templateData = str_replace('$DEFAULT_DATE_FORMAT$', 'protected $dateFormat = \''.config('laravel_generator.model_default_date_format').'\';', $templateData);
+        if (config('infyom.laravel_generator.model_default_date_format') != "") {
+            $templateData = str_replace('$DEFAULT_DATE_FORMAT$', '    protected $dateFormat = \''.config('infyom.laravel_generator.model_default_date_format').'\';', $templateData);
         } else {
             $templateData = str_replace('$DEFAULT_DATE_FORMAT$', '', $templateData);
         }
