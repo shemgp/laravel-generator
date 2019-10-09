@@ -91,6 +91,7 @@ class GeneratorConfig
         'moduleName',
         'bootform',
         'datagrid',
+        'useJsValidation',
     ];
 
     public $tableName;

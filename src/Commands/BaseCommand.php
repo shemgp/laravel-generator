@@ -273,6 +273,7 @@ class BaseCommand extends Command
             ['datagrid', null, InputOption::VALUE_NONE, 'Use datagrid to display list table in CRUD.'],
             ['bootform', null, InputOption::VALUE_NONE, 'Use bootform when building add/edit forms. Has inline validation of errors.'],
             ['moduleName', null, InputOption::VALUE_REQUIRED, 'Generate files to this module & namespace (eg. Admin)'],
+            ['useJsValidation', null, InputOption::VALUE_NONE, 'Use js validation (need to run composer require proengsoft/laravel-jsvalidation).'],
         ];
     }
 

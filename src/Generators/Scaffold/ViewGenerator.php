@@ -276,6 +276,16 @@ class ViewGenerator extends BaseGenerator
         if (trim(config('infyom.laravel_generator.default_layout')) != "") {
             $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
         }
+        if ($this->commandData->getOption('useJsValidation'))
+        {
+            $requestClass = $this->commandData->config->nsRequest.'\\Create'.$this->commandData->modelName.'Request';
+            $bladeSnippet = "{!! JsValidator::formRequest('$requestClass') !!}";
+            $templateData = str_replace('$JS_VALIDATION$', $bladeSnippet, $templateData);
+        }
+        else
+        {
+            $templateData = str_replace('$JS_VALIDATION$', '', $templateData);
+        }
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
@@ -293,6 +303,16 @@ class ViewGenerator extends BaseGenerator
 
         if (trim(config('infyom.laravel_generator.default_layout')) != "") {
             $templateData = str_replace("@extends('layouts.app')", "@extends('".config('infyom.laravel_generator.default_layout')."')", $templateData);
+        }
+        if ($this->commandData->getOption('useJsValidation'))
+        {
+            $requestClass = $this->commandData->config->nsRequest.'\\Update'.$this->commandData->modelName.'Request';
+            $bladeSnippet = "{!! JsValidator::formRequest('$requestClass') !!}";
+            $templateData = str_replace('$JS_VALIDATION$', $bladeSnippet, $templateData);
+        }
+        else
+        {
+            $templateData = str_replace('$JS_VALIDATION$', '', $templateData);
         }
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
