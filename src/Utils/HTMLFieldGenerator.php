@@ -22,12 +22,19 @@ class HTMLFieldGenerator
                 break;
             case 'select':
             case 'enum':
+            case 'selectize':
                 $fieldTemplate = get_template('scaffold.'.$field_folder.'.select', $templateType);
+                if ($field->htmlType == 'selectize')
+                    $fieldTemplate = get_template('scaffold.'.$field_folder.'.selectize', $templateType);
                 $radioLabels = GeneratorFieldsInputUtil::prepareKeyValueArrFromLabelValueStr($field->htmlValues);
+                if (count($radioLabels))
+                    $replacement = GeneratorFieldsInputUtil::prepareKeyValueArrayStr($radioLabels);
+                else
+                    $replacement = 'null';
 
                 $fieldTemplate = str_replace(
                     '$INPUT_ARR$',
-                    GeneratorFieldsInputUtil::prepareKeyValueArrayStr($radioLabels),
+                    $replacement,
                     $fieldTemplate
                 );
                 break;

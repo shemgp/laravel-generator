@@ -294,6 +294,7 @@ class TableFieldsGenerator
     {
         $foreignKeys = $this->prepareForeignKeys();
         $this->checkForRelations($foreignKeys);
+        $this->replaceSelectizeFields();
     }
 
     /**
@@ -543,5 +544,23 @@ class TableFieldsGenerator
         }
 
         return $manyToOneRelations;
+    }
+
+    private function replaceSelectizeFields()
+    {
+        $selectizeFields = [];
+        foreach($this->relations as $relation)
+        {
+            if ($relation->type == "mt1" && preg_match('/(_id|id_)/', $relation->inputs[1]))
+                $selectizeFields[] = $relation->inputs[1];
+        }
+        foreach($this->fields as $field)
+        {
+            if (in_array($field->name, $selectizeFields))
+            {
+                $field->htmlType = "selectize";
+                $field->htmlValues = [];
+            }
+        }
     }
 }
