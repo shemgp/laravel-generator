@@ -4,6 +4,8 @@ namespace $NAMESPACE_REQUEST$;
 
 use $NAMESPACE_REQUEST_BASE$\Request;
 use $NAMESPACE_MODEL$\$MODEL_NAME$;
+use Illuminate\Validation\ValidationRuleParser;
+use Illuminate\Validation\Rule;
 
 class Update$MODEL_NAME$Request extends Request
 {
@@ -25,6 +27,21 @@ class Update$MODEL_NAME$Request extends Request
      */
     public function rules()
     {
-        return $MODEL_NAME$::$rules;
+        preg_match('/\\/([0-9]+)(?:\\/edit){0,1}$/', url()->current(), $matches);
+        $id = $matches[1];
+        $rules = $MODEL_NAME$::$rules;
+        $table_name = (new $MODEL_NAME$)->table;
+
+        $pr = new ValidationRuleParser([]);
+        $updated_rules = [];
+        foreach($pr->explode($rules)->rules as $rule_name => $rule)
+        {
+            foreach($rule as $key => $value)
+                if (preg_match('/unique:([^,]+)$/', $value, $matches) && $matches[1] == $table_name)
+                    $rule[$key] = Rule::unique($matches[1])->ignore($id);
+            $updated_rules[$rule_name] = $rule;
+        }
+
+        return $updated_rules;
     }
 }
