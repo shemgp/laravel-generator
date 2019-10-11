@@ -263,12 +263,17 @@ class GeneratorConfig
         $commandData->addDynamicVariable('$MODEL_NAME_PLURAL_HUMAN$', $this->mHumanPlural);
 
         if (!empty($this->prefixes['route'])) {
-            $commandData->addDynamicVariable('$ROUTE_NAMED_PREFIX$', $this->prefixes['route'].'.');
+            $commandData->addDynamicVariable('$ROUTE_NAMED_PREFIX$', $addModuleName.$this->prefixes['route'].'.');
             $commandData->addDynamicVariable('$ROUTE_PREFIX$', str_replace('.', '/', $this->prefixes['route']).'/');
             $commandData->addDynamicVariable('$RAW_ROUTE_PREFIX$', $this->prefixes['route']);
         } else {
             $commandData->addDynamicVariable('$ROUTE_PREFIX$', '');
             $commandData->addDynamicVariable('$ROUTE_NAMED_PREFIX$', '');
+        }
+        if (!empty($this->options['moduleName'])) {
+            $addModuleName = '';
+            $addModuleName = strtolower($this->options['moduleName']).'.'.$commandData->dynamicVars['$ROUTE_NAMED_PREFIX$'];
+            $commandData->addDynamicVariable('$ROUTE_NAMED_PREFIX$', $addModuleName);
         }
 
         if (!empty($this->prefixes['ns'])) {
@@ -302,6 +307,7 @@ class GeneratorConfig
         if (!empty($this->options['moduleName'])) {
             $module_title = Str::title(str_replace("_", " ", Str::snake($this->options['moduleName'])));
             $commandData->addDynamicVariable('$MODULE_NAME$', $module_title);
+            $commandData->addDynamicVariable('$MODULE_NAME_LOWER$', strtolower($module_title));
 
             $this->modules_path = config('modules.paths.modules', base_path('Modules')).'/'.$this->options['moduleName'];
             $icon_string = "";
