@@ -72,10 +72,15 @@ class GeneratorFieldRelation
         }
 
         if (!empty($functionName) and !empty($relation)) {
-            return $this->generateRelation($functionName, $relation, $relationClass);
+            return $this->generateRelation($this->removeIllegalCharacters($functionName), $relation, $relationClass);
         }
 
         return '';
+    }
+
+    private function removeIllegalCharacters($name)
+    {
+        return preg_replace('/[a-zA-Z0-9_\x7f-\xff]*/', '',  $name);
     }
 
     private function generateRelation($functionName, $relation, $relationClass)
