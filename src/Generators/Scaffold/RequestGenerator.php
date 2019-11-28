@@ -26,12 +26,26 @@ class RequestGenerator extends BaseGenerator
         $this->path = $commandData->config->pathRequest;
         $this->createFileName = 'Create'.$this->commandData->modelName.'Request.php';
         $this->updateFileName = 'Update'.$this->commandData->modelName.'Request.php';
+        $this->baseClass = 'Request.php';
     }
 
     public function generate()
     {
+        $this->generateCreateRequestBaseClass();
         $this->generateCreateRequest();
         $this->generateUpdateRequest();
+    }
+
+    private function generateCreateRequestBaseClass()
+    {
+        $templateData = get_template('scaffold.request.Request', 'laravel-generator');
+
+        $templateData = fill_template($this->commandData->dynamicVars, $templateData);
+
+        FileUtil::createFile($this->path, $this->baseClass, $templateData);
+
+        $this->commandData->commandComment("\nRequest base class created: ");
+        $this->commandData->commandInfo($this->baseClass);
     }
 
     private function generateCreateRequest()
