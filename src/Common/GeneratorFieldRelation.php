@@ -93,6 +93,8 @@ class GeneratorFieldRelation
         $template = str_replace('$RELATIONSHIP_CLASS$', $relationClass, $template);
         $template = str_replace('$FUNCTION_NAME$', $functionName, $template);
         $template = str_replace('$RELATION$', $relation, $template);
+        if (preg_match("/^[a-zA-Z0-9_.]+\\.(.*)/", $modelName))
+            $modelName = preg_replace_callback("/^[a-zA-Z0-9_.]+\\.(.)(.*)/", function ($m) { return strtoupper($m[1]).$m[2]; }, $modelName);
         $template = str_replace('$RELATION_MODEL_NAME$', $modelName, $template);
 
         if (count($inputs) > 0) {
