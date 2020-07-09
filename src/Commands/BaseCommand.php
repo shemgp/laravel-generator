@@ -74,8 +74,8 @@ class BaseCommand extends Command
         }
 
         if ($this->commandData->getOption('factory') || (
-                !$this->isSkip('tests') and $this->commandData->getAddOn('tests')
-            )) {
+            !$this->isSkip('tests') and $this->commandData->getAddOn('tests')
+        )) {
             $factoryGenerator = new FactoryGenerator($this->commandData);
             $factoryGenerator->generate();
         }
@@ -161,6 +161,11 @@ class BaseCommand extends Command
                 }
             }
         }
+
+        if ($this->commandData->getOption('localized')) {
+            $this->saveLocaleFile();
+        }
+
         if (!$this->isSkip('dump-autoload')) {
             $this->info('Generating autoload files');
             $this->composer->dumpOptimized();
@@ -228,6 +233,31 @@ class BaseCommand extends Command
         $this->commandData->commandInfo($fileName);
     }
 
+    private function saveLocaleFile()
+    {
+        $locales = [
+            'singular' => $this->commandData->modelName,
+            'plural'   => $this->commandData->config->mPlural,
+            'fields'   => [],
+        ];
+
+        foreach ($this->commandData->fields as $field) {
+            $locales['fields'][$field->name] = Str::title(str_replace('_', ' ', $field->name));
+        }
+
+        $path = config('infyom.laravel_generator.path.models_locale_files', base_path('resources/lang/en/models/'));
+
+        $fileName = $this->commandData->config->mCamelPlural.'.php';
+
+        if (file_exists($path.$fileName) && !$this->confirmOverwrite($fileName)) {
+            return;
+        }
+        $content = "<?php\n\nreturn ".var_export($locales, true).';'.\PHP_EOL;
+        FileUtil::createFile($path, $fileName, $content);
+        $this->commandData->commandComment("\nModel Locale File saved: ");
+        $this->commandData->commandInfo($fileName);
+    }
+
     /**
      * @param $fileName
      * @param string $prompt
@@ -269,11 +299,13 @@ class BaseCommand extends Command
             ['forceMigrate', null, InputOption::VALUE_NONE, 'Specify if you want to run migration or not'],
             ['factory', null, InputOption::VALUE_NONE, 'To generate factory'],
             ['seeder', null, InputOption::VALUE_NONE, 'To generate seeder'],
+            ['localized', null, InputOption::VALUE_NONE, 'Localize files.'],
             ['repositoryPattern', null, InputOption::VALUE_REQUIRED, 'Repository Pattern'],
             ['datagrid', null, InputOption::VALUE_NONE, 'Use datagrid to display list table in CRUD.'],
             ['bootform', null, InputOption::VALUE_NONE, 'Use bootform when building add/edit forms. Has inline validation of errors.'],
             ['moduleName', null, InputOption::VALUE_REQUIRED, 'Generate files to this module & namespace (eg. Admin)'],
             ['useJsValidation', null, InputOption::VALUE_NONE, 'Use js validation (need to run composer require proengsoft/laravel-jsvalidation).'],
+            ['connection', null, InputOption::VALUE_REQUIRED, 'Specify connection name'],
         ];
     }
 

@@ -33,6 +33,7 @@ class GeneratorConfig
     public $pathFactory;
     public $pathSeeder;
     public $pathDatabaseSeeder;
+    public $pathViewProvider;
 
     public $pathApiController;
     public $pathApiRequest;
@@ -59,12 +60,15 @@ class GeneratorConfig
     public $mHuman;
     public $mHumanPlural;
 
+    public $connection = '';
+
     /* Generator Options */
     public $options;
 
     /* Prefixes */
     public $prefixes;
 
+    /** @var CommandData */
     private $commandData;
 
     /* Command Options */
@@ -92,6 +96,8 @@ class GeneratorConfig
         'bootform',
         'datagrid',
         'useJsValidation',
+        'localized',
+        'connection',
     ];
 
     public $tableName;
@@ -218,10 +224,14 @@ class GeneratorConfig
 
         $this->pathSeeder = config('infyom.laravel_generator.path.seeder', database_path('seeds/'));
         $this->pathDatabaseSeeder = config('infyom.laravel_generator.path.database_seeder', database_path('seeds/DatabaseSeeder.php'));
+        $this->pathViewProvider = config(
+            'infyom.laravel_generator.path.view_provider',
+            app_path('Providers/ViewServiceProvider.php')
+        );
 
         $this->modelJsPath = config(
-                'infyom.laravel_generator.path.modelsJs',
-                resource_path('assets/js/models/')
+            'infyom.laravel_generator.path.modelsJs',
+            resource_path('assets/js/models/')
         );
     }
 
@@ -261,6 +271,14 @@ class GeneratorConfig
         $commandData->addDynamicVariable('$MODEL_NAME_PLURAL_SLASH$', $this->mSlashPlural);
         $commandData->addDynamicVariable('$MODEL_NAME_HUMAN$', $this->mHuman);
         $commandData->addDynamicVariable('$MODEL_NAME_PLURAL_HUMAN$', $this->mHumanPlural);
+        $commandData->addDynamicVariable('$FILES$', '');
+
+        $connectionText = '';
+        if ($connection = $this->getOption('connection')) {
+            $this->connection = $connection;
+            $connectionText = infy_tab(4).'public $connection = "'.$connection.'";';
+        }
+        $commandData->addDynamicVariable('$CONNECTION$', $connectionText);
 
         if (!empty($this->prefixes['route'])) {
             $commandData->addDynamicVariable('$ROUTE_NAMED_PREFIX$', $addModuleName.$this->prefixes['route'].'.');
@@ -344,6 +362,7 @@ class GeneratorConfig
                 $commandData->addDynamicVariable('$MODULE_DESCRIPTION$', '');
             }
         }
+        $commandData->addDynamicVariable('$SEARCHABLE$', '');
 
         return $commandData;
     }
@@ -400,6 +419,14 @@ class GeneratorConfig
 
         if (empty($this->options['save'])) {
             $this->options['save'] = config('infyom.laravel_generator.options.save_schema_file', true);
+        }
+
+        if (empty($this->options['localized'])) {
+            $this->options['localized'] = config('infyom.laravel_generator.options.localized', false);
+        }
+
+        if ($this->options['localized']) {
+            $commandData->getTemplatesManager()->setUseLocale(true);
         }
 
         $this->options['softDelete'] = config('infyom.laravel_generator.options.softDelete', false);
@@ -480,7 +507,7 @@ class GeneratorConfig
         $this->prefixes['public'] = explode('/', config('infyom.laravel_generator.prefixes.public', ''));
 
         if ($this->getOption('prefix')) {
-            $multiplePrefixes = explode(',', $this->getOption('prefix'));
+            $multiplePrefixes = explode('/', $this->getOption('prefix'));
 
             $this->prefixes['route'] = array_merge($this->prefixes['route'], $multiplePrefixes);
             $this->prefixes['path'] = array_merge($this->prefixes['path'], $multiplePrefixes);

@@ -27,6 +27,7 @@ class Update$MODEL_NAME$Request extends Request
      */
     public function rules()
     {
+        /*
         preg_match('/\\/([0-9]+)(?:\\/edit){0,1}$/', url()->current(), $matches);
         $id = $matches[1];
         $rules = $MODEL_NAME$::$rules;
@@ -43,5 +44,9 @@ class Update$MODEL_NAME$Request extends Request
         }
 
         return $updated_rules;
+        */
+        $rules = $MODEL_NAME$::$rules;
+        $UNIQUE_RULES$
+        return $rules;
     }
 }

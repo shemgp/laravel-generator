@@ -32,6 +32,9 @@ class GeneratorField
     public $inIndex = true;
     public $inView = true;
 
+    /** @var int */
+    public $numberDecimalPoints = 2;
+
     /**
      * @param Column $column
      * @param $dbInput
@@ -53,6 +56,14 @@ class GeneratorField
 
         if (empty($htmlInput)) {
             $this->htmlType = 'text';
+
+            return;
+        }
+
+        if (Str::contains($htmlInput, 'selectTable')) {
+            $inputsArr = explode(':', $htmlInput);
+            $this->htmlType = array_shift($inputsArr);
+            $this->htmlValues = $inputsArr;
 
             return;
         }

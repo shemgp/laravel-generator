@@ -54,7 +54,11 @@ return [
 
         'templates_dir'     => base_path('resources/infyom/infyom-generator-templates/'),
 
-        'modelJs'           => base_path('resources/assets/js/models/'),
+        'modelJs'           => resource_path('assets/js/models/'),
+
+        'factory'           => database_path('factories/'),
+
+        'view_provider'     => app_path('Providers/ViewServiceProvider.php'),
     ],
 
     /*
@@ -132,6 +136,10 @@ return [
     'options' => [
 
         'softDelete' => true,
+
+        'save_schema_file' => true,
+
+        'localized' => false,
 
         'tables_searchable_default' => false,
 

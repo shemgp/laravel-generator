@@ -12,6 +12,7 @@ $SOFT_DELETE$
     $TIMESTAMPS$
 $SOFT_DELETE_DATES$
 $DEFAULT_DATE_FORMAT$
+$CONNECTION$
 $PRIMARY$
     public $fillable = [
         $FIELDS$

@@ -8,6 +8,7 @@ use InfyOm\Generator\Generators\API\APIControllerGenerator;
 use InfyOm\Generator\Generators\API\APIRequestGenerator;
 use InfyOm\Generator\Generators\API\APIRoutesGenerator;
 use InfyOm\Generator\Generators\API\APITestGenerator;
+use InfyOm\Generator\Generators\FactoryGenerator;
 use InfyOm\Generator\Generators\MigrationGenerator;
 use InfyOm\Generator\Generators\ModelGenerator;
 use InfyOm\Generator\Generators\RepositoryGenerator;
@@ -72,7 +73,6 @@ class RollbackGeneratorCommand extends Command
             CommandData::$COMMAND_TYPE_API,
             CommandData::$COMMAND_TYPE_SCAFFOLD,
             CommandData::$COMMAND_TYPE_API_SCAFFOLD,
-            CommandData::$COMMAND_TYPE_VUEJS,
         ])) {
             $this->error('invalid rollback type');
         }
@@ -81,7 +81,19 @@ class RollbackGeneratorCommand extends Command
         $this->commandData = new CommandData($this, $this->argument('type'));
         $this->commandData->config->mName = $this->commandData->modelName = $this->argument('model');
 
-        $this->commandData->config->init($this->commandData, ['tableName', 'prefix', 'plural', 'moduleName']);
+        $this->commandData->config->init($this->commandData, ['tableName', 'prefix', 'plural', 'views', 'moduleName']);
+
+        $views = $this->commandData->getOption('views');
+        if (!empty($views)) {
+            $views = explode(',', $views);
+            $viewGenerator = new ViewGenerator($this->commandData);
+            $viewGenerator->rollback($views);
+
+            $this->info('Generating autoload files');
+            $this->composer->dumpOptimized();
+
+            return;
+        }
 
         $migrationGenerator = new MigrationGenerator($this->commandData);
         $migrationGenerator->rollback();
@@ -113,18 +125,6 @@ class RollbackGeneratorCommand extends Command
         $routeGenerator = new RoutesGenerator($this->commandData);
         $routeGenerator->rollback();
 
-        $controllerGenerator = new VueJsControllerGenerator($this->commandData);
-        $controllerGenerator->rollback();
-
-        $routesGenerator = new VueJsRoutesGenerator($this->commandData);
-        $routesGenerator->rollback();
-
-        $viewGenerator = new VueJsViewGenerator($this->commandData);
-        $viewGenerator->rollback();
-
-        $modelJsConfigGenerator = new ModelJsConfigGenerator($this->commandData);
-        $modelJsConfigGenerator->rollback();
-
         if ($this->commandData->getAddOn('tests')) {
             $repositoryTestGenerator = new RepositoryTestGenerator($this->commandData);
             $repositoryTestGenerator->rollback();
@@ -135,6 +135,9 @@ class RollbackGeneratorCommand extends Command
             $apiTestGenerator = new APITestGenerator($this->commandData);
             $apiTestGenerator->rollback();
         }
+
+        $factoryGenerator = new FactoryGenerator($this->commandData);
+        $factoryGenerator->rollback();
 
         if ($this->commandData->config->getAddOn('menu.enabled')) {
             $menuGenerator = new MenuGenerator($this->commandData);
@@ -157,6 +160,7 @@ class RollbackGeneratorCommand extends Command
             ['prefix', null, InputOption::VALUE_REQUIRED, 'Prefix for all files'],
             ['plural', null, InputOption::VALUE_REQUIRED, 'Plural Model name'],
             ['moduleName', null, InputOption::VALUE_REQUIRED, 'Generate files to this module & namespace (eg. Admin)'],
+            ['views', null, InputOption::VALUE_REQUIRED, 'Views to rollback'],
         ];
     }
 

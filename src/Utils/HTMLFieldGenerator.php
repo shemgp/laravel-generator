@@ -6,10 +6,11 @@ use InfyOm\Generator\Common\GeneratorField;
 
 class HTMLFieldGenerator
 {
-    public static function generateHTML(GeneratorField $field, $templateType, $field_folder = 'fields')
+    public static function generateHTML(GeneratorField $field, $templateType, $localized = false, $field_folder = 'fields')
     {
         $fieldTemplate = '';
 
+        $localized = ($localized) ? '_locale' : '';
         switch ($field->htmlType) {
             case 'text':
             case 'textarea':
@@ -18,14 +19,14 @@ class HTMLFieldGenerator
             case 'email':
             case 'password':
             case 'number':
-                $fieldTemplate = get_template('scaffold.'.$field_folder.'.'.$field->htmlType, $templateType);
+                $fieldTemplate = get_template('scaffold.'.$field_folder.'.'.$field->htmlType.$localized, $templateType);
                 break;
             case 'select':
             case 'enum':
             case 'selectize':
-                $fieldTemplate = get_template('scaffold.'.$field_folder.'.select', $templateType);
+                $fieldTemplate = get_template('scaffold.'.$field_folder.'.select'.$localized, $templateType);
                 if ($field->htmlType == 'selectize')
-                    $fieldTemplate = get_template('scaffold.'.$field_folder.'.selectize', $templateType);
+                    $fieldTemplate = get_template('scaffold.'.$field_folder.'.selectize'.$localized, $templateType);
                 $radioLabels = GeneratorFieldsInputUtil::prepareKeyValueArrFromLabelValueStr($field->htmlValues);
                 if (count($radioLabels))
                     $replacement = GeneratorFieldsInputUtil::prepareKeyValueArrayStr($radioLabels);
@@ -39,7 +40,7 @@ class HTMLFieldGenerator
                 );
                 break;
             case 'checkbox':
-                $fieldTemplate = get_template('scaffold.'.$field_folder.'.checkbox', $templateType);
+                $fieldTemplate = get_template('scaffold.'.$field_folder.'.checkbox'.$localized, $templateType);
                 if (count($field->htmlValues) > 0) {
                     $checkboxValue = $field->htmlValues[0];
                 } else {
@@ -48,8 +49,8 @@ class HTMLFieldGenerator
                 $fieldTemplate = str_replace('$CHECKBOX_VALUE$', $checkboxValue, $fieldTemplate);
                 break;
             case 'radio':
-                $fieldTemplate = get_template('scaffold.'.$field_folder.'.radio_group', $templateType);
-                $radioTemplate = get_template('scaffold.'.$field_folder.'.radio', $templateType);
+                $fieldTemplate = get_template('scaffold.'.$field_folder.'.radio_group'.$localized, $templateType);
+                $radioTemplate = get_template('scaffold.'.$field_folder.'.radio'.$localized, $templateType);
 
                 $radioLabels = GeneratorFieldsInputUtil::prepareKeyValueArrFromLabelValueStr($field->htmlValues);
 
@@ -62,7 +63,7 @@ class HTMLFieldGenerator
                 $fieldTemplate = str_replace('$RADIO_BUTTONS$', implode("\n", $radioButtons), $fieldTemplate);
                 break;
             case 'toggle-switch':
-                $fieldTemplate = get_template('scaffold.fields.toggle-switch', $templateType);
+                $fieldTemplate = get_template('scaffold.fields.toggle-switch'.$localized, $templateType);
                 break;
         }
 
