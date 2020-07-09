@@ -483,7 +483,7 @@ class GeneratorConfig
             config(['infyom.laravel_generator.namespace' => $new_config_namespaces]);
 
             // change prefix
-            $viewPrefix = $this->prefixes['view'];
+            $viewPrefix = $this->prefixes['view']??null;
             config(['infyom.laravel_generator.prefixes.view' => strtolower($this->options['moduleName']).'::']);
             $this->prefixes['view'] = config('infyom.laravel_generator.prefixes.view');
             if ($this->getOption('plural')) {
