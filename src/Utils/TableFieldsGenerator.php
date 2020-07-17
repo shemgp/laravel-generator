@@ -117,10 +117,10 @@ class TableFieldsGenerator
                     $field = $this->generateField($column, 'boolean', 'checkbox,1');
                     break;
                 case 'datetime':
-                    $field = $this->generateField($column, 'datetime', 'date');
+                    $field = $this->generateField($column, 'datetime', 'datetime');
                     break;
                 case 'datetimetz':
-                    $field = $this->generateField($column, 'dateTimeTz', 'date');
+                    $field = $this->generateField($column, 'dateTimeTz', 'datetime');
                     break;
                 case 'date':
                     $field = $this->generateField($column, 'date', 'date');

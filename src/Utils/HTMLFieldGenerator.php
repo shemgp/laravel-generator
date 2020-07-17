@@ -15,6 +15,7 @@ class HTMLFieldGenerator
             case 'text':
             case 'textarea':
             case 'date':
+            case 'datetime':
             case 'file':
             case 'email':
             case 'password':
