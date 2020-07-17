@@ -178,10 +178,126 @@ class ViewGenerator extends BaseGenerator
         $setColumnsTemplate = get_template('scaffold.views.datagrid_table_set_columns', $this->templateType);
 
         $setColumns = [];
-
         foreach ($this->commandData->fields as $field) {
             if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
                 continue;
+            }
+
+            $this->commandData->dynamicVars['$DATAGRID_TABLE_FK_NAME$'] = null;
+            if (preg_match("/(.*)(_id)$/", $field->name, $matches))
+            {
+                $pdo = \DB::getPdo();
+                $current_driver = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+
+                // get shcema
+                $tmp_table = array_reverse(explode(".", $this->commandData->dynamicVars['$TABLE_NAME$']));
+                $table = $tmp_table[0];
+                $schema = $tmp_table[1]??'public';
+
+                // get db connection from column table name
+                $found = false;
+                $column_table = $matches[1];
+                $singular_name = Str::singular($column_table);
+                $plural_name = Str::plural($singular_name);
+                $db_connections = array_keys(config('database.connections'));
+                $connection = null;
+                foreach($db_connections as $db_connection)
+                {
+                    $db_connection_data = config('database.connections')[$db_connection];
+                    if ($db_connection_data['driver'] != $current_driver
+                            && $db_connection_data['schema'] != $schema)
+                        continue;
+                    try {
+                        \DB::connection($db_connection)->getPdo();
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                    if ($db_connection)
+                    {
+                        if (\Schema::connection($db_connection)->hasTable($plural_name)) {
+                            $found_table = $plural_name;
+                            $connection = $db_connection;
+                            break;
+                        } else if (\Schema::connection($db_connection)->hasTable($singular_name)) {
+                            $found_table = $singular_name;
+                            $connection = $db_connection;
+                            break;
+                        }
+                    }
+                }
+
+                // find primary key
+                $indexes = \DB::connection($connection)->getDoctrineSchemaManager()->listTableIndexes($found_table);
+                $primary_key = 'id';
+                foreach($indexes as $type => $index)
+                {
+                    if ($type == 'primary')
+                    {
+                        $columns = $index->getColumns();
+                        if (count($columns) == 1)
+                            $primary_key = $columns[0];
+                        break;
+                    }
+                }
+
+                // guess name by getting first text if "name" field doesn't exist
+                $default_name = 'name';
+                $field_name = null;
+                if (!\Schema::connection($connection)->hasColumn($found_table, $default_name))
+                {
+                    $columns = \DB::connection($connection)->getDoctrineSchemaManager()->listTableColumns($found_table);
+                    foreach($columns as $column)
+                    {
+                        if ($column->getType()->getName() == "text")
+                        {
+                            $field_name = $column->getName();
+                        }
+                    }
+                }
+                else {
+                    $field_name = $default_name;
+                }
+
+                $wrapperTempTopTemplate = <<<'EOF'
+
+                        'wrapper' => function ($value, $row) {
+                            $db = \DB::connection("$CONNECTION$")
+                                ->table("$TABLE$")
+                                ->where("$PRIMARY_KEY$", $value);
+                EOF;
+                if ($field_name)
+                {
+                    $wrapperTempMiddleTemplate = <<<'EOF'
+
+                                return $db->get("$NAME$")[0]->{"$NAME$"};
+                    EOF;
+                    $wrapperTempMiddleTemplate = fill_template(['$NAME$' => $field_name], $wrapperTempMiddleTemplate);
+                }
+                else
+                {
+                    $wrapperTempMiddleTemplate = <<<'EOF'
+
+                                return $value;
+                    EOF;
+                }
+                $wrapperTempBottomTemplate = <<<'EOF'
+
+                        }
+                EOF;
+
+                $wrapperTempTemplate = fill_template(
+                    [
+                        '$CONNECTION$' => $connection,
+                        '$PRIMARY_KEY$' => $primary_key,
+                        '$TABLE$' => $found_table
+                    ],
+                    $wrapperTempTopTemplate.$wrapperTempMiddleTemplate.$wrapperTempBottomTemplate,
+                );
+                $withDataTableTemplate = fill_template(['$DATAGRID_TABLE_FK_NAME$' => $wrapperTempTemplate], $setColumnsTemplate);
+            }
+            else
+            {
+                $withDataTableTemplate = $setColumnsTemplate;
             }
 
             $field->isFillable = $field->isFillable ? 'true' : 'false';
@@ -189,7 +305,7 @@ class ViewGenerator extends BaseGenerator
             $setColumns[] = $fieldTemplate = fill_template_with_field_data(
                 $this->commandData->dynamicVars,
                 $this->commandData->fieldNamesMapping,
-                $setColumnsTemplate,
+                $withDataTableTemplate,
                 $field
             );
         }
