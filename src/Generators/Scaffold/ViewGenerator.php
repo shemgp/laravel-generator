@@ -130,6 +130,12 @@ class ViewGenerator extends BaseGenerator
     {
         $templateName = 'blade_table_body';
 
+        $tableFields = $this->generateTableHeaderFields();
+        if ($this->commandData->jqueryDT()) {
+            $templateName = 'js_table';
+            $tableFields = $this->generateJSTableHeaderFields();
+        }
+
         if ($this->commandData->isLocalizedTemplates()) {
             $templateName .= '_locale';
         }
@@ -138,7 +144,7 @@ class ViewGenerator extends BaseGenerator
 
         $templateData = fill_template($this->commandData->dynamicVars, $templateData);
 
-        $templateData = str_replace('$FIELD_HEADERS$', $this->generateTableHeaderFields(), $templateData);
+        $templateData = str_replace('$FIELD_HEADERS$', $tableFields, $templateData);
 
         $cellFieldTemplate = get_template('scaffold.views.table_cell', $this->templateType);
 
@@ -162,155 +168,18 @@ class ViewGenerator extends BaseGenerator
         return str_replace('$FIELD_BODY$', $tableBodyFields, $templateData);
     }
 
-    private function generateDatagridBladeTableBody()
+    private function generateJSTableHeaderFields()
     {
-        $templateData = get_template('scaffold.views.datagrid_blade_table_body', $this->templateType);
-
-        $templateData = fill_template($this->commandData->dynamicVars, $templateData);
-
-        $templateData = str_replace('$SET_COLUMNS$', $this->generateDatagridSetColumnFields(), $templateData);
-
-        return $templateData;
-    }
-
-    private function generateDatagridSetColumnFields()
-    {
-        $setColumnsTemplate = get_template('scaffold.views.datagrid_table_set_columns', $this->templateType);
-
-        $setColumns = [];
+        $fields = '';
         foreach ($this->commandData->fields as $field) {
-            if (!$field->inIndex || in_array($field->name, $this->hidden_fields)) {
+            if (in_array($field->name, ['id', 'created_at', 'updated_at', 'deleted_at'])) {
                 continue;
             }
 
-            $this->commandData->dynamicVars['$DATAGRID_TABLE_FK_NAME$'] = null;
-            if (preg_match("/(.*)(_id)$/", $field->name, $matches))
-            {
-                $pdo = \DB::getPdo();
-                $current_driver = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
-
-                // get shcema
-                $tmp_table = array_reverse(explode(".", $this->commandData->dynamicVars['$TABLE_NAME$']));
-                $table = $tmp_table[0];
-                $schema = $tmp_table[1]??'public';
-
-                // get db connection from column table name
-                $found = false;
-                $column_table = $matches[1];
-                $singular_name = Str::singular($column_table);
-                $plural_name = Str::plural($singular_name);
-                $db_connections = array_keys(config('database.connections'));
-                $connection = null;
-                foreach($db_connections as $db_connection)
-                {
-                    $db_connection_data = config('database.connections')[$db_connection];
-                    if ($db_connection_data['driver'] != $current_driver
-                            && $db_connection_data['schema'] != $schema)
-                        continue;
-                    try {
-                        \DB::connection($db_connection)->getPdo();
-                    } catch (\Exception $e) {
-                        continue;
-                    }
-                    if ($db_connection)
-                    {
-                        if (\Schema::connection($db_connection)->hasTable($plural_name)) {
-                            $found_table = $plural_name;
-                            $connection = $db_connection;
-                            break;
-                        } else if (\Schema::connection($db_connection)->hasTable($singular_name)) {
-                            $found_table = $singular_name;
-                            $connection = $db_connection;
-                            break;
-                        }
-                    }
-                }
-
-                // find primary key
-                $indexes = \DB::connection($connection)->getDoctrineSchemaManager()->listTableIndexes($found_table);
-                $primary_key = 'id';
-                foreach($indexes as $type => $index)
-                {
-                    if ($type == 'primary')
-                    {
-                        $columns = $index->getColumns();
-                        if (count($columns) == 1)
-                            $primary_key = $columns[0];
-                        break;
-                    }
-                }
-
-                // guess name by getting first text if "name" field doesn't exist
-                $default_name = 'name';
-                $field_name = null;
-                if (!\Schema::connection($connection)->hasColumn($found_table, $default_name))
-                {
-                    $columns = \DB::connection($connection)->getDoctrineSchemaManager()->listTableColumns($found_table);
-                    foreach($columns as $column)
-                    {
-                        if ($column->getType()->getName() == "text")
-                        {
-                            $field_name = $column->getName();
-                        }
-                    }
-                }
-                else {
-                    $field_name = $default_name;
-                }
-
-                $wrapperTempTopTemplate = <<<'EOF'
-
-                        'wrapper' => function ($value, $row) {
-                            $db = \DB::connection("$CONNECTION$")
-                                ->table("$TABLE$")
-                                ->where("$PRIMARY_KEY$", $value);
-                EOF;
-                if ($field_name)
-                {
-                    $wrapperTempMiddleTemplate = <<<'EOF'
-
-                                return $db->get("$NAME$")[0]->{"$NAME$"};
-                    EOF;
-                    $wrapperTempMiddleTemplate = fill_template(['$NAME$' => $field_name], $wrapperTempMiddleTemplate);
-                }
-                else
-                {
-                    $wrapperTempMiddleTemplate = <<<'EOF'
-
-                                return $value;
-                    EOF;
-                }
-                $wrapperTempBottomTemplate = <<<'EOF'
-
-                        }
-                EOF;
-
-                $wrapperTempTemplate = fill_template(
-                    [
-                        '$CONNECTION$' => $connection,
-                        '$PRIMARY_KEY$' => $primary_key,
-                        '$TABLE$' => $found_table
-                    ],
-                    $wrapperTempTopTemplate.$wrapperTempMiddleTemplate.$wrapperTempBottomTemplate,
-                );
-                $withDataTableTemplate = fill_template(['$DATAGRID_TABLE_FK_NAME$' => $wrapperTempTemplate], $setColumnsTemplate);
-            }
-            else
-            {
-                $withDataTableTemplate = $setColumnsTemplate;
-            }
-
-            $field->isFillable = $field->isFillable ? 'true' : 'false';
-
-            $setColumns[] = $fieldTemplate = fill_template_with_field_data(
-                $this->commandData->dynamicVars,
-                $this->commandData->fieldNamesMapping,
-                $withDataTableTemplate,
-                $field
-            );
+            $fields .= '<th scope="col">'.str_replace("'", '', $field->name).'</th>';
         }
 
-        return implode(infy_nl_tab(0, 1), $setColumns);
+        return $fields;
     }
 
     private function generateTableHeaderFields()
@@ -333,10 +202,21 @@ class ViewGenerator extends BaseGenerator
             }
 
             if ($localized) {
+                /**
+                 * Replacing $FIELD_NAME$ before fill_template_with_field_data_locale() otherwise also
+                 * $FIELD_NAME$ get replaced with @lang('models/$modelName.fields.$value')
+                 * and so we don't have $FIELD_NAME$ in table_header_locale.stub
+                 * We could need 'raw' field name in header for example for sorting.
+                 * We still have $FIELD_NAME_TITLE$ replaced with @lang('models/$modelName.fields.$value').
+                 *
+                 * @see issue https://github.com/InfyOmLabs/laravel-generator/issues/887
+                 */
+                $preFilledHeaderFieldTemplate = str_replace('$FIELD_NAME$', $field->name, $headerFieldTemplate);
+
                 $headerFields[] = $fieldTemplate = fill_template_with_field_data_locale(
                     $this->commandData->dynamicVars,
                     $this->commandData->fieldNamesMapping,
-                    $headerFieldTemplate,
+                    $preFilledHeaderFieldTemplate,
                     $field
                 );
             } else {
@@ -354,7 +234,7 @@ class ViewGenerator extends BaseGenerator
 
     private function generateIndex()
     {
-        $templateName = 'index';
+        $templateName = ($this->commandData->jqueryDT()) ? 'js_index' : 'index';
 
         if ($this->commandData->isLocalizedTemplates()) {
             $templateName .= '_locale';
@@ -448,6 +328,11 @@ class ViewGenerator extends BaseGenerator
                 }
 
                 $tableName = $this->commandData->config->tableName;
+                $viewPath = $this->commandData->config->prefixes['view'];
+                if (!empty($viewPath)) {
+                    $tableName = $viewPath.'.'.$tableName;
+                }
+
                 $variableName = Str::singular($selectTable).'Items'; // e.g $userItems
 
                 $fieldTemplate = $this->generateViewComposer($tableName, $variableName, $columns, $selectTable, $modalName);
@@ -475,7 +360,11 @@ class ViewGenerator extends BaseGenerator
 
     private function generateViewComposer($tableName, $variableName, $columns, $selectTable, $modelName = null)
     {
-        $fieldTemplate = get_template('scaffold.fields.select', $this->templateType);
+        $templateName = 'scaffold.fields.select';
+        if ($this->commandData->isLocalizedTemplates()) {
+            $templateName .= '_locale';
+        }
+        $fieldTemplate = get_template($templateName, $this->templateType);
 
         $viewServiceProvider = new ViewServiceProviderGenerator($this->commandData);
         $viewServiceProvider->generate();

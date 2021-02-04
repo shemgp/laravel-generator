@@ -40,7 +40,7 @@ return [
 
         'api_controller'    => app_path('Http/Controllers/API/'),
 
-        'test_trait'        => base_path('tests/Traits/'),
+        'api_resource'      => app_path('Http/Resources/'),
 
         'repository_test'   => base_path('tests/Repositories/'),
 
@@ -53,8 +53,6 @@ return [
         'schema_files'      => base_path('resources/model_schemas/'),
 
         'templates_dir'     => base_path('resources/infyom/infyom-generator-templates/'),
-
-        'modelJs'           => resource_path('assets/js/models/'),
 
         'factory'           => database_path('factories/'),
 
@@ -79,6 +77,8 @@ return [
         'controller'        => 'App\Http\Controllers',
 
         'api_controller'    => 'App\Http\Controllers\API',
+
+        'api_resource'      => 'App\Http\Resources',
 
         'request'           => 'App\Http\Requests',
 
@@ -146,6 +146,8 @@ return [
         'hidden_fields' => env('ENABLE_USER_TRACKING_MODEL') == 'true' ? [
             'user_id'
         ] : [],
+
+        'resources' => false,
 
         'excluded_fields' => [
             'created_at',

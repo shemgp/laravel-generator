@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use InfyOm\Generator\Common\CommandData;
 use InfyOm\Generator\Generators\API\APIControllerGenerator;
 use InfyOm\Generator\Generators\API\APIRequestGenerator;
+use InfyOm\Generator\Generators\API\APIResourceGenerator;
 use InfyOm\Generator\Generators\API\APIRoutesGenerator;
 use InfyOm\Generator\Generators\API\APITestGenerator;
 use InfyOm\Generator\Generators\FactoryGenerator;
@@ -15,6 +16,7 @@ use InfyOm\Generator\Generators\ModelGenerator;
 use InfyOm\Generator\Generators\RepositoryGenerator;
 use InfyOm\Generator\Generators\RepositoryTestGenerator;
 use InfyOm\Generator\Generators\Scaffold\ControllerGenerator;
+use InfyOm\Generator\Generators\Scaffold\JQueryDatatableAssetsGenerator;
 use InfyOm\Generator\Generators\Scaffold\MenuGenerator;
 use InfyOm\Generator\Generators\Scaffold\RequestGenerator;
 use InfyOm\Generator\Generators\Scaffold\RoutesGenerator;
@@ -113,6 +115,10 @@ class BaseCommand extends Command
             $apiTestGenerator = new APITestGenerator($this->commandData);
             $apiTestGenerator->generate();
         }
+        if ($this->commandData->getOption('resources')) {
+            $apiResourceGenerator = new APIResourceGenerator($this->commandData);
+            $apiResourceGenerator->generate();
+        }
     }
 
     public function generateScaffoldItems()
@@ -140,6 +146,11 @@ class BaseCommand extends Command
         if (!$this->isSkip('menu') and $this->commandData->config->getAddOn('menu.enabled')) {
             $menuGenerator = new MenuGenerator($this->commandData);
             $menuGenerator->generate();
+        }
+
+        if ($this->commandData->jqueryDT()) {
+            $assetsGenerator = new JQueryDatatableAssetsGenerator($this->commandData);
+            $assetsGenerator->generate();
         }
     }
 
@@ -301,11 +312,13 @@ class BaseCommand extends Command
             ['seeder', null, InputOption::VALUE_NONE, 'To generate seeder'],
             ['localized', null, InputOption::VALUE_NONE, 'Localize files.'],
             ['repositoryPattern', null, InputOption::VALUE_REQUIRED, 'Repository Pattern'],
+            ['resources', null, InputOption::VALUE_REQUIRED, 'Resources'],
+            ['connection', null, InputOption::VALUE_REQUIRED, 'Specify connection name'],
+            ['jqueryDT', null, InputOption::VALUE_NONE, 'Generate listing screen into JQuery Datatables'],
             ['datagrid', null, InputOption::VALUE_NONE, 'Use datagrid to display list table in CRUD.'],
             ['bootform', null, InputOption::VALUE_NONE, 'Use bootform when building add/edit forms. Has inline validation of errors.'],
             ['moduleName', null, InputOption::VALUE_REQUIRED, 'Generate files to this module & namespace (eg. Admin)'],
             ['useJsValidation', null, InputOption::VALUE_NONE, 'Use js validation (need to run composer require proengsoft/laravel-jsvalidation).'],
-            ['connection', null, InputOption::VALUE_REQUIRED, 'Specify connection name'],
         ];
     }
 
